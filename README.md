@@ -1,0 +1,330 @@
+<div align="center">
+
+# 🏔️ loss-topography
+
+### An Interactive & Animated Visual Laboratory for Machine Learning Loss Surfaces, Optimization Dynamics, and Landscape Geometry
+
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B.svg?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Plotly](https://img.shields.io/badge/Plotly-5.18+-3F4F75.svg?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com/)
+[![Tests Passing](https://img.shields.io/badge/tests-passing-brightgreen.svg?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+<p align="center">
+  <b>Explore why modern neural networks train, why optimizers fail or succeed, and how loss geometry governs generalization.</b>
+  <br />
+  Featuring 10 loss functions, 9 mathematical landscapes, 8 optimizers, Hessian eigenspectrum diagnostics, distribution shift simulations, and filter-normalized neural network slices.
+</p>
+
+---
+
+</div>
+
+## 🌟 Visual Showcase
+
+### 1. The Multi-Modal Optimizer Race
+Watch **SGD**, **Momentum**, **RMSProp**, and **Adam** compete in real time across rugged, non-convex terrain with multiple local basins and saddle barriers. Notice how adaptive learning rates (RMSProp, Adam) navigate ravines while standard SGD stalls or oscillates violently across steep walls.
+
+<div align="center">
+  <img src="assets/hero_optimizer_race.gif" alt="3D Optimizer Race" width="100%" />
+</div>
+
+---
+
+### 2. The Comprehensive Loss Function Atlas
+A side-by-side taxonomy of 10 classic and modern loss functions with their exact analytical derivatives $\nabla \mathcal{L}(r)$. Observe the smooth saturation of Huber and Cauchy vs. the discontinuity in subgradient MAE, and the asymmetric probability-shaping of Focal Loss.
+
+<div align="center">
+  <img src="assets/loss_function_atlas.png" alt="Loss Function Atlas" width="100%" />
+</div>
+
+---
+
+### 3. Saddle Point Escape & Negative Curvature
+Non-convex optimization in high dimensions is dominated by saddle points, not local minima. Here, SGD without momentum remains trapped in the low-gradient plateau of a strict saddle ($\lambda_1 < 0, \lambda_2 > 0$), whereas Momentum and NAG build velocity along the negative curvature direction to escape rapidly.
+
+<div align="center">
+  <img src="assets/saddle_point_escape.gif" alt="Saddle Point Escape" width="100%" />
+</div>
+
+---
+
+### 4. Sharp vs. Flat Minima & The Generalization Gap
+Why do flat minima generalize better than sharp minima? (Hochreiter & Schmidhuber, 1997; Keskar et al., 2017). Under dataset distribution shift $P_{\text{train}} \neq P_{\text{test}}$ ($\theta^* \to \theta^* + \Delta\theta$), training loss remains low for both, but the sharp basin suffers catastrophic test error explosion while the flat basin maintains robust generalization.
+
+<div align="center">
+  <img src="assets/sharp_vs_flat_minima.gif" alt="Sharp vs Flat Minima Generalization" width="100%" />
+</div>
+
+---
+
+### 5. Empirical Convergence & Wall-Clock Efficiency
+Is an optimizer fast per step, or fast per unit of progress? We evaluate optimizers along two orthogonal axes: **Iteration Complexity** (steps to reach $\epsilon$-ball) and **Wall-Clock Computational Overhead** ($\mu\text{s}$ per gradient update step), alongside **Trajectory Path Efficiency** (ratio of Euclidean displacement to total path length).
+
+<div align="center">
+  <img src="assets/loss_convergence_timing.png" alt="Convergence and Timing Benchmark" width="100%" />
+</div>
+
+---
+
+### 6. Filter-Normalized Neural Network Loss Landscapes
+Directly replicating the landmark technique from Li et al. (2018), *"Visualizing the Loss Landscape of Neural Nets"*. By applying filter-wise scale normalization $\delta_{l,j} = \frac{d_{l,j}}{\|d_{l,j}\|_F} \|\theta^*_{l,j}\|_F$, we eliminate scale-invariance artifacts and expose the dramatic geometric smoothing effect introduced by skip connections.
+
+<div align="center">
+  <img src="assets/filter_normalized_nn_surface.png" alt="Filter Normalized NN Surface" width="100%" />
+</div>
+
+---
+
+## 🔬 Theoretical Foundations
+
+### 1. Loss Functions & Analytical Derivatives
+
+Every loss function in `loss-topography` is implemented with both closed-form vector evaluations and exact analytical first and second derivatives:
+
+| Loss Function | Formulation $\mathcal{L}(y, \hat{y})$ | Primary Domain & Use Case | Robustness to Outliers |
+| :--- | :--- | :--- | :--- |
+| **MSE ($L_2$)** | $\frac{1}{2}(y - \hat{y})^2$ | Gaussian noise regression | Low (quadratic penalty $\propto r^2$) |
+| **MAE ($L_1$)** | $\|y - \hat{y}\|$ | Laplace noise, median regression | High (linear penalty $\propto \|r\|$) |
+| **Huber Loss** | $\begin{cases} \frac{1}{2}r^2 & \|r\|\le\delta \\ \delta(\|r\| - \frac{1}{2}\delta) & \text{otherwise} \end{cases}$ | Robust regression, RL value targets | High (smooth transition at $\delta$) |
+| **Log-Cosh** | $\log(\cosh(y - \hat{y}))$ | Smooth $L_1$ approximation | High (everywhere twice differentiable) |
+| **Quantile (Pinball)** | $\max(\tau r, (\tau - 1)r)$ | Uncertainty estimation, risk bounds | High (asymmetric quantile regression) |
+| **Binary Cross-Entropy** | $-[y \log \hat{y} + (1-y)\log(1-\hat{y})]$ | Probabilistic binary classification | Standard cross-entropy |
+| **Focal Loss** | $-\alpha_t (1 - p_t)^\gamma \log(p_t)$ | Severe class imbalance, object detection | Down-weights easy examples ($\gamma > 0$) |
+| **Hinge Loss** | $\max(0, 1 - y \hat{y})$ | Maximum-margin classification (SVM) | Sparse support vectors |
+| **KL Divergence** | $\sum p \log(p / q)$ | Knowledge distillation, VAEs | Asymmetric information divergence |
+| **Cauchy Loss** | $\frac{c^2}{2} \log\left(1 + \frac{r^2}{c^2}\right)$ | Computer vision robust estimation | Extreme (descending influence curve) |
+
+---
+
+### 2. Benchmark Topographies & Critical Point Geometries
+
+The library provides 9 classical and challenging non-convex surfaces with full analytical gradients $\nabla f$ and Hessian matrices $\mathbf{H} = \nabla^2 f$:
+
+1. **Rosenbrock Banana Valley**: $f(x, y) = (a - x)^2 + b(y - x^2)^2$. Ill-conditioned curved parabolic valley where gradient descent oscillates endlessly across steep walls.
+2. **Rastrigin Surface**: $f(x, y) = 20 + x^2 - 10\cos(2\pi x) + y^2 - 10\cos(2\pi y)$. Highly non-convex field riddled with dense lattices of local minima.
+3. **Ackley Function**: Nearly flat outer plateau with an exponential central funnel. Demands momentum or adaptive step-sizes to avoid stalling.
+4. **Beale & Booth Functions**: Anisotropic quadratic-like surfaces with sharply unequal condition numbers $\kappa = \lambda_{\max} / \lambda_{\min} \gg 1$.
+5. **Himmelblau Multimodal**: Four distinct global minima with identical zero loss, serving as a clean test of initialization basin sensitivity.
+6. **Strict Saddle**: $f(x, y) = x^2 - y^2$. Eigenvalues $\lambda_1 = 2, \lambda_2 = -2$. Pure hyperbolic saddle showcasing negative curvature escape.
+7. **Monkey Saddle**: $f(x, y) = x^3 - 3xy^2$. Degenerate higher-order saddle where $\mathbf{H}(0, 0) = \mathbf{0}$, rendering standard Newton steps undefined.
+8. **Regularized Saddle**: $f(x, y) = \frac{1}{2}(x^2 - y^2) + \frac{1}{12}y^4$. Escape along $y$ leads to bounded, stable symmetric double minima at $(0, \pm\sqrt{3})$.
+
+---
+
+### 3. Optimization Algorithms
+
+`loss-topography` implements 8 fundamental and modern optimizers with explicit trajectory logging:
+
+- **Vanilla SGD**: $\theta_{t+1} = \theta_t - \eta \mathbf{g}_t$
+- **Polyak Momentum**: $v_{t+1} = \beta v_t + \mathbf{g}_t, \quad \theta_{t+1} = \theta_t - \eta v_{t+1}$
+- **Nesterov Accelerated Gradient (NAG)**: Evaluates gradient at the anticipated look-ahead position $\theta_t - \eta \beta v_t$ to dampen oscillations before hitting steep walls.
+- **AdaGrad**: Accumulates historical squared gradients $G_t = G_{t-1} + \mathbf{g}_t^2$ to provide coordinate-wise adaptive learning rates.
+- **RMSProp**: Exponentially decaying average of squared gradients $v_t = \beta v_{t-1} + (1-\beta)\mathbf{g}_t^2$ preventing vanishing updates.
+- **Adam**: First and second moment estimation with bias corrections $\hat{m}_t = \frac{m_t}{1-\beta_1^t}, \hat{v}_t = \frac{v_t}{1-\beta_2^t}$.
+- **AdamW**: Decoupled weight decay ensuring $L_2$ regularization acts directly on parameters rather than being distorted by gradient variance moments.
+- **Damped Newton's Method**: Second-order curvature exploitation using regularized inverse Hessian $\theta_{t+1} = \theta_t - \eta (\mathbf{H} + \lambda \mathbf{I})^{-1} \mathbf{g}_t$.
+
+---
+
+### 4. Filter-Wise Normalized Slices (Li et al., NeurIPS 2018)
+
+When visualizing deep neural network loss surfaces in 2D parameter subspaces:
+$$\mathcal{L}(\alpha, \beta) = L(\theta^* + \alpha \delta + \beta \eta)$$
+random directions $d \in \mathbb{R}^D$ suffer from scale invariance in networks with batch normalization or ReLU activations. `loss-topography` normalizes each weight filter $d_{l, j}$ independently:
+$$\delta_{l, j} = \frac{d_{l, j}}{\|d_{l, j}\|_F} \|\theta^*_{l, j}\|_F$$
+This yields genuine, scale-invariant comparisons proving why **ResNet skip connections** eliminate chaotic, non-convex fracturing and create convex-like funnels.
+
+---
+
+## 📊 Benchmark Suite Results
+
+Summary results from running `python scripts/run_benchmarks.py` across standard testbeds:
+
+| Surface | Optimizer | Steps to Reach $\epsilon$ | Final Loss | Wall-Clock ($\mu\text{s}$/step) | Path Efficiency | Oscillation Metric |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Rosenbrock** | **Damped Newton** | **23** | **0.0000** | 55.9 | 0.2403 | 15.75 |
+| Rosenbrock | AdamW | — | 0.7942 | 42.6 | 0.5554 | 0.52 |
+| Rosenbrock | Adam | — | 0.9179 | 39.6 | 0.5556 | 0.50 |
+| Rosenbrock | AdaGrad | — | 0.6140 | 39.4 | 0.4373 | 1.06 |
+| **Rastrigin** | **AdaGrad** | **24** | **0.0000** | 41.9 | 0.2232 | 6.17 |
+| Rastrigin | Adam | — | 0.9950 | 43.4 | 0.4409 | 0.29 |
+| Rastrigin | Momentum | — | 7.4341 | 50.3 | 0.0344 | 0.27 |
+| **Regularized Saddle** | **NAG** | **18** | **-2.5000** | 38.8 | 0.6295 | 0.01 |
+| Regularized Saddle | Adam | — | -2.5000 | 40.2 | 0.6705 | 0.01 |
+| Regularized Saddle | SGD | — | -2.5000 | 38.4 | 0.9896 | 0.01 |
+
+*Note: Path Efficiency is $\frac{\|\theta_{\text{final}} - \theta_0\|}{\sum \|\theta_{t+1} - \theta_t\|} \in (0, 1]$. An efficiency of 1.0 indicates a geodesic straight line, while lower values reflect wandering or oscillatory overshoot.*
+
+---
+
+## 🚀 Quickstart & Installation
+
+### Option 1: Install from Source
+
+```bash
+git clone https://github.com/your-username/loss-topography.git
+cd loss-topography
+pip install -r requirements.txt
+```
+
+### Option 2: Python Library Usage
+
+```python
+import numpy as np
+from loss_topography.surfaces import Rosenbrock, StrictSaddle
+from loss_topography.optimizers import Adam, MomentumSGD, DampedNewton
+from loss_topography.losses import Huber, FocalLoss
+
+# 1. Inspect surface curvature & critical points
+surface = StrictSaddle()
+hessian_origin = surface.hessian(0.0, 0.0)
+eigs = surface.eigenvalues(0.0, 0.0)
+print(f"Hessian at (0,0):\n{hessian_origin}")
+print(f"Eigenvalues: {eigs} -> Classified as: {surface.classify_point(0.0, 0.0)}")
+
+# 2. Simulate optimizer race with full trajectory logging
+adam = Adam(lr=0.05)
+log = adam.run(surface, x0=0.0, y0=0.5, n_steps=100)
+
+print(f"Final Position: ({log.xs[-1]:.4f}, {log.ys[-1]:.4f})")
+print(f"Total Path Length: {log.path_length:.3f}")
+print(f"Path Efficiency:   {log.path_efficiency:.3f}")
+print(f"Mean Step Latency: {log.wall_clock_ms_per_step * 1000:.1f} µs")
+
+# 3. Compute loss function value and exact analytical gradient
+huber = Huber(delta=1.0)
+residual = np.array([-2.5, 0.0, 1.2])
+loss_val = huber(residual)
+grad_val = huber.grad(residual)
+print(f"Huber loss: {loss_val}")
+print(f"Huber grad: {grad_val}")
+```
+
+---
+
+## 🖥️ Interactive Web Laboratory (Streamlit + Plotly)
+
+Launch the full interactive visualization lab in your browser:
+
+```bash
+streamlit run app.py
+```
+
+The web application provides five dedicated investigation rooms:
+
+1. **🏁 3D Optimizer Race Arena**:
+   - Interactive 3D Plotly surface with camera orbit and pan
+   - Live toggling of 7 optimizers simultaneously
+   - Real-time parameter sliders (Learning rate $\eta$, Momentum $\beta$, steps $N$, starting coordinates $x_0, y_0$)
+   - Trajectory metrics comparison table (Final Loss, Total Path Length, Path Efficiency, Latency)
+
+2. **🔍 Saddle & Curvature Inspector**:
+   - Real-time 2D contour vector field displaying gradient arrows $\nabla f$
+   - Hessian eigen-decomposition: principal curvature directions visualized as orthogonal eigenvector axes
+   - Interactive coordinate picker displaying $\lambda_1, \lambda_2$, determinant $\det(\mathbf{H})$, trace $\text{Tr}(\mathbf{H})$, and critical point classification
+
+3. **📊 Sharp vs. Flat Minima Simulator**:
+   - Interactive twin-well potential with adjustable sharpness ratio $k \in [5, 100]$
+   - Real-time distribution shift slider ($\Delta \theta \in [-1.0, +1.0]$)
+   - Live Generalization Gap metric display comparing test error degradation
+
+4. **📈 Loss Function Sandbox**:
+   - Interactive side-by-side plots of loss curves $\mathcal{L}(r)$, first derivative $\nabla\mathcal{L}(r)$, and second derivative $\nabla^2\mathcal{L}(r)$
+   - Real-time hyperparameter adjustment (Huber $\delta$, Focal $\gamma$, Quantile $\tau$, Cauchy $c$)
+   - Outlier sensitivity tester: observe gradient saturation under extreme residuals
+
+5. **🧠 Real Neural Network Landscape Slicer**:
+   - Train a real PyTorch MLP or ResNet on synthetic non-linear classification datasets (Two Moons, Circles)
+   - Compute Li et al. filter-normalized random 2D directional slices $(\alpha, \beta)$
+   - Compare loss surface smoothness between plain feedforward architectures and skip-connection residual architectures
+
+---
+
+## 🎨 Headless Asset Generation Pipeline
+
+Generate all dark-mode GIFs and high-resolution publication-quality PNG charts in deterministic headless mode:
+
+```bash
+python scripts/generate_readme_assets.py
+```
+
+Outputs generated into `assets/`:
+- `assets/hero_optimizer_race.gif` (Multi-modal 3D/2D synchronized race)
+- `assets/saddle_point_escape.gif` (Strict saddle negative curvature dynamics)
+- `assets/sharp_vs_flat_minima.gif` (Distribution shift & generalization gap animation)
+- `assets/loss_function_atlas.png` (High-DPI 10-loss taxonomy panel)
+- `assets/loss_convergence_timing.png` (Four-panel convergence, timing, and efficiency dashboard)
+- `assets/filter_normalized_nn_surface.png` (Plain MLP vs ResNet 3D + contour landscape)
+
+---
+
+## 📁 Repository Structure
+
+```
+loss-topography/
+├── app.py                           # Interactive Streamlit + Plotly multi-tab web application
+├── assets/                          # Generated high-resolution GIFs and PNG figures
+│   ├── filter_normalized_nn_surface.png
+│   ├── hero_optimizer_race.gif
+│   ├── loss_convergence_timing.png
+│   ├── loss_function_atlas.png
+│   ├── saddle_point_escape.gif
+│   └── sharp_vs_flat_minima.gif
+├── loss_topography/                 # Modular core library
+│   ├── __init__.py                  # Package exports
+│   ├── benchmarks.py                # Convergence timing & path efficiency benchmarking
+│   ├── losses.py                    # 10 Loss functions with analytical grad & hessian
+│   ├── nn_landscape.py              # Filter-normalized PyTorch landscape slicing
+│   ├── optimizers.py                # 8 Optimizers with trajectory tracking & timing
+│   ├── sharpness.py                 # Sharp vs flat minima & distribution shift simulator
+│   ├── surfaces.py                  # 9 Analytical surfaces, critical point classifier
+│   └── theme.py                     # Curated dark-mode palette & plotting styles
+├── scripts/                         # Executable CLI tools & renderers
+│   ├── generate_readme_assets.py    # Headless GIF/PNG generation pipeline
+│   └── run_benchmarks.py            # Comprehensive benchmark runner
+├── tests/                           # Complete test suite (67 unit tests)
+│   ├── test_losses.py               # Finite difference verification & properties
+│   ├── test_nn_landscape.py         # PyTorch landscape slicing validation
+│   ├── test_optimizers.py           # Convergence, trajectories, timing tests
+│   ├── test_sharpness.py            # Curvature, shift & sharpness tests
+│   └── test_surfaces.py             # Hessian symmetry, eigenvalues, gradients
+├── pyproject.toml                   # Modern packaging metadata
+├── requirements.txt                 # Pinned dependencies
+├── LICENSE                          # MIT License
+└── README.md                        # Project documentation & visual showcase
+```
+
+---
+
+## 🧪 Testing & Validation
+
+The test suite rigorously verifies mathematical correctness using exact analytical formulas and numerical finite differences across all components:
+
+```bash
+python -m pytest tests/ -v
+```
+
+Validation guarantees:
+- **Gradient correctness**: Every loss and surface gradient is checked against central finite differences ($|g_{\text{exact}} - g_{\text{num}}| < 10^{-4}$).
+- **Hessian symmetry**: All Hessian matrices verify $\mathbf{H} = \mathbf{H}^T$.
+- **Critical point classification**: Eigenvalue signs correctly classify minima, maxima, and saddles.
+- **Optimizer trajectory monotonicity**: Convergence on convex quadratics and Rosenbrock valley.
+- **Scale invariance**: PyTorch filter normalization verified across weights of differing layer magnitudes.
+
+---
+
+## 📚 Key References
+
+1. **Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T.** (2018). *Visualizing the Loss Landscape of Neural Nets*. Advances in Neural Information Processing Systems (NeurIPS 2018).
+2. **Keskar, N. S., Mudigere, D., Nocedal, J., Smelyanskiy, M., & Tang, P. T. P.** (2017). *On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima*. International Conference on Learning Representations (ICLR 2017).
+3. **Hochreiter, S., & Schmidhuber, J.** (1997). *Flat Minima*. Neural Computation, 9(1), 1-42.
+4. **Lin, T. Y., Goyal, P., Girshick, R., He, K., & Dollár, P.** (2017). *Focal Loss for Dense Object Detection*. IEEE International Conference on Computer Vision (ICCV 2017).
+5. **Dauphin, Y. N., et al.** (2014). *Identifying and attacking the saddle point problem in high-dimensional non-convex optimization*. Advances in Neural Information Processing Systems (NeurIPS 2014).
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

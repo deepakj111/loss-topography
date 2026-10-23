@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "loss-topography"
+version = "1.0.0"
+description = "Interactive visual laboratory exploring ML loss functions, loss landscapes, critical points, optimizer trajectories, and real neural network loss surfaces."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "loss-topography contributors"},
+]
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "plotly>=5.15",
+    "streamlit>=1.28",
+    "Pillow>=10.0",
+    "torch>=2.0",
+    "scipy>=1.11",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[tool.setuptools.packages.find]
+include = ["loss_topography*"]
