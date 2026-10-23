@@ -636,6 +636,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ⚠ Skipping interactive HTML: {e}")
 
+    try:
+        from scripts.generate_benchmark_matrix import run_comprehensive_suite
+        run_comprehensive_suite()
+    except Exception as e:
+        print(f"  ⚠ Skipping benchmark matrix: {e}")
+
     print()
     print("=" * 60)
     print("  All assets generated successfully!")
@@ -650,6 +656,7 @@ if __name__ == "__main__":
         "loss_function_atlas.png",
         "loss_convergence_timing.png",
         "filter_normalized_nn_surface.png",
+        "optimizer_benchmark_matrix.png",
         "interactive_3d_landscape.html",
     ]
     all_ok = True

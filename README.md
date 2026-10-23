@@ -281,31 +281,52 @@ This yields scale-invariant comparisons proving why **ResNet skip connections** 
 
 ---
 
-## 📊 Benchmark Suite Results
+## 📊 Multi-Surface Optimizer Benchmark Suite
 
-Summary results from running `python scripts/run_benchmarks.py`:
+To rigorously compare optimization mechanics, all 8 optimizers are benchmarked across 5 mathematically distinct loss landscapes representing diverse geometric difficulties:
 
-| Surface | Optimizer | Steps to Reach $\epsilon$ | Final Loss | Wall-Clock ($\mu\text{s}$/step) | Path Efficiency | Oscillation Metric |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Rosenbrock** | **Damped Newton** | **23** | **0.0000** | 55.9 | 0.2403 | 15.75 |
-| Rosenbrock | AdamW | — | 0.7942 | 42.6 | 0.5554 | 0.52 |
-| Rosenbrock | Adam | — | 0.9179 | 39.6 | 0.5556 | 0.50 |
-| Rosenbrock | AdaGrad | — | 0.6140 | 39.4 | 0.4373 | 1.06 |
-| **Rastrigin** | **AdaGrad** | **24** | **0.0000** | 41.9 | 0.2232 | 6.17 |
-| Rastrigin | Adam | — | 0.9950 | 43.4 | 0.4409 | 0.29 |
-| Rastrigin | Momentum | — | 7.4341 | 50.3 | 0.0344 | 0.27 |
-| **Regularized Saddle** | **NAG** | **18** | **-2.5000** | 38.8 | 0.6295 | 0.01 |
-| Regularized Saddle | Adam | — | -2.5000 | 40.2 | 0.6705 | 0.01 |
-| Regularized Saddle | SGD | — | -2.5000 | 38.4 | 0.9896 | 0.01 |
+1. **Beale Function**: Curved valley with extremely flat outer wings and high condition number $\kappa \gg 10^3$.
+2. **Rosenbrock Banana Valley**: Classical non-convex parabolic ravine where gradient descent oscillates endlessly.
+3. **Rastrigin Surface**: Highly non-convex multimodal field with dense lattices of local minima.
+4. **Regularized Saddle**: Indefinite saddle point at $(0, 0)$ with symmetric global minima at $(0, \pm\sqrt{5})$ ($f^* = -2.5000$).
+5. **Multi-Modal Landscape**: Multiple conflicting basins separated by steep ridges and passes.
 
-> **Metric Definitions & Interpretation**:
-> - **Steps to Reach $\epsilon$**: Number of iterations required to reach within $\epsilon = 0.01$ of the analytical global optimum $f^*$. An em-dash (`—`) indicates the optimizer did not converge within the maximum step budget (300 steps) due to ill-conditioning or local minima stagnation.
-> - **Final Loss on Regularized Saddle**: The Regularized Saddle $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has global minima at $(0, \pm\sqrt{5})$ with true analytical minimum value $f^* = -2.5000$. Achieving $-2.5000$ indicates successful saddle escape.
-> - **Path Efficiency**: Ratio of straight-line Euclidean displacement to total traversed arc length:
->   $$
->   \text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2} \in (0, 1]
->   $$
->   A value of $1.0$ represents a direct geodesic, while lower values reflect oscillatory wandering or wall bouncing.
+<div align="center">
+  <img src="assets/optimizer_benchmark_matrix.png" alt="Multi-Surface Optimizer Benchmark Dashboard" width="100%" />
+</div>
+
+### Aggregated Performance Matrix
+
+The table below summarizes convergence iterations, final objective values, trajectory path efficiencies, and wall-clock latencies across all 8 optimizers and 5 benchmark surfaces:
+
+| Optimizer | Algorithmic Category | Beale | Rosenbrock | Rastrigin | Reg. Saddle | Multi-Modal | Mean Path Efficiency | Mean Latency (µs/step) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **SGD** | 1st-Order Basic | 1.53e11 | 6.00e8 | 23.60 | -2.50 | 0.27 | 0.402 | 69.7 µs |
+| **Momentum** | Polyak Heavy-Ball | 1.53e11 | 6.00e8 | 11.94 | **44 steps** ★ | 0.27 | 0.319 | 68.6 µs |
+| **NAG** | Nesterov Accelerated | 1.53e11 | 6.00e8 | 10.39 | **43 steps** ★ | 0.27 | 0.339 | 68.0 µs |
+| **AdaGrad** | Historical Gradient Sum | 0.47 | 2.33 | 7.96 ★ | **15 steps** ★ | 0.27 | 0.665 | 67.4 µs |
+| **RMSProp** | Exponential Moving Average | 0.57 | 1.16 | 7.96 ★ | **40 steps** ★ | 0.27 | **0.854** ★ | 66.7 µs ★ |
+| **Adam** | Adaptive First & Second Moments | 1.45 | 2.40 | 7.96 ★ | **49 steps** ★ | 0.27 | 0.643 | 67.6 µs |
+| **AdamW** | Decoupled Weight Decay | 1.62 | 2.18 | 7.96 ★ | **50 steps** ★ | 0.27 | 0.654 | 67.4 µs |
+| **Damped Newton** | 2nd-Order Curvature Exploitation | 14.20 | **41 steps** ★ | 52.56 | 0.00 | 0.27 | 0.831 | 95.8 µs |
+
+> **Key Architectural Insights & FAQ**:
+>
+> 1. **Why does Damped Newton win on Rosenbrock?**
+>    The Rosenbrock valley has extreme anisotropic curvature ($\lambda_{\max} / \lambda_{\min} \gg 10^3$). First-order methods bounce between steep walls, wasting gradient magnitude. By computing the inverse Hessian $(\mathbf{H} + \mu \mathbf{I})^{-1}$, Newton's method rotates the update vector directly along the curved valley floor, reaching $\epsilon$-convergence in just **41 steps**. However, solving the linear system incurs higher compute overhead (**95.8 µs/step** vs ~67 µs for first-order).
+>
+> 2. **Why are steps to reach $\epsilon$ shown as numbers vs final loss?**
+>    When an optimizer enters within $\epsilon = 0.01$ of the analytical global optimum $f^*$, the table displays the exact iteration count (e.g., `41 steps`). If the optimizer does not reach $\epsilon$ within the 250-step limit due to ill-conditioning or plateau stagnation, the table displays the final loss achieved.
+>
+> 3. **Why is the final loss negative on Regularized Saddle?**
+>    The test function $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has an indefinite saddle at the origin $(0, 0)$ and symmetric global minima at $(0, \pm\sqrt{5})$ with true analytical minimum $f^* = -2.5000$. Achieving a final loss of $-2.5000$ proves the optimizer built sufficient velocity to escape the saddle point and converge into the global basin.
+>
+> 4. **What is Path Efficiency?**
+>    Defined as the ratio of straight-line Euclidean displacement to total traversed arc length:
+>    $$
+>    \text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2} \in (0, 1]
+>    $$
+>    A value of $1.0$ represents a direct geodesic straight line, while lower values reflect wandering, spiral oscillation, or bouncing across ravine walls. **RMSProp** achieved the highest overall path efficiency (**0.854**) across the benchmark suite.
 
 ---
 

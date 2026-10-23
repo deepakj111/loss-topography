@@ -240,16 +240,20 @@ class Beale(Surface):
         )
 
     def f(self, x, y):
-        return ((1.5 - x + x * y) ** 2 +
-                (2.25 - x + x * y ** 2) ** 2 +
-                (2.625 - x + x * y ** 3) ** 2)
+        x_c = np.clip(x, -25.0, 25.0)
+        y_c = np.clip(y, -25.0, 25.0)
+        return ((1.5 - x_c + x_c * y_c) ** 2 +
+                (2.25 - x_c + x_c * y_c ** 2) ** 2 +
+                (2.625 - x_c + x_c * y_c ** 3) ** 2)
 
     def grad(self, x, y):
-        a = 1.5 - x + x * y
-        b = 2.25 - x + x * y ** 2
-        c = 2.625 - x + x * y ** 3
-        dx = 2 * a * (-1 + y) + 2 * b * (-1 + y ** 2) + 2 * c * (-1 + y ** 3)
-        dy = 2 * a * x + 2 * b * (2 * x * y) + 2 * c * (3 * x * y ** 2)
+        x_c = np.clip(x, -25.0, 25.0)
+        y_c = np.clip(y, -25.0, 25.0)
+        a = 1.5 - x_c + x_c * y_c
+        b = 2.25 - x_c + x_c * y_c ** 2
+        c = 2.625 - x_c + x_c * y_c ** 3
+        dx = 2 * a * (-1 + y_c) + 2 * b * (-1 + y_c ** 2) + 2 * c * (-1 + y_c ** 3)
+        dy = 2 * a * x_c + 2 * b * (2 * x_c * y_c) + 2 * c * (3 * x_c * y_c ** 2)
         return dx, dy
 
     def hessian(self, x, y):
