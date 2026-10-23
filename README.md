@@ -190,31 +190,6 @@ Every loss function in `loss-topography` implements closed-form vector evaluatio
 | **KL Divergence** | `∑ p·log(p / q)` | Knowledge distillation, VAEs | Asymmetric information divergence |
 | **Cauchy Loss** | `(c²/2) log(1 + r²/c²)` | Computer vision robust estimation | Extreme (descending influence curve) |
 
-<details>
-<summary><b>📐 Click to Expand Full LaTeX Definitions & Derivatives</b></summary>
-
-#### Huber Loss
-$$
-\mathcal{L}_\delta(r) = \begin{cases} \frac{1}{2}r^2 & \text{if } |r| \le \delta \\ \delta(|r| - \frac{1}{2}\delta) & \text{otherwise} \end{cases}, \qquad \nabla \mathcal{L}_\delta(r) = \begin{cases} r & \text{if } |r| \le \delta \\ \delta \operatorname{sgn}(r) & \text{otherwise} \end{cases}
-$$
-
-#### Focal Loss (Lin et al., ICCV 2017)
-$$
-\text{FL}(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t), \qquad p_t = \begin{cases} p & \text{if } y = 1 \\ 1 - p & \text{otherwise} \end{cases}
-$$
-
-#### Cauchy / Lorentzian Loss
-$$
-\rho(r) = \frac{c^2}{2} \log\left(1 + \frac{r^2}{c^2}\right), \qquad \psi(r) = \frac{r}{1 + (r/c)^2}
-$$
-
-#### Log-Cosh Loss
-$$
-\mathcal{L}(r) = \log(\cosh(r)), \qquad \nabla \mathcal{L}(r) = \tanh(r), \qquad \nabla^2 \mathcal{L}(r) = \operatorname{sech}^2(r)
-$$
-
-</details>
-
 ---
 
 ### 2. Benchmark Topographies & Critical Point Geometries
@@ -236,30 +211,57 @@ $$
 
 `loss-topography` implements 8 fundamental and modern optimizers with explicit trajectory logging:
 
-- **Vanilla Gradient Descent (SGD)**:
-  $$\theta_{t+1} = \theta_t - \eta \mathbf{g}_t$$
+#### 1. Vanilla Gradient Descent (SGD)
 
-- **Polyak Momentum**:
-  $$v_{t+1} = \beta v_t + \mathbf{g}_t, \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}$$
+$$
+\theta_{t+1} = \theta_t - \eta \mathbf{g}_t
+$$
 
-- **Nesterov Accelerated Gradient (NAG)**:
-  $$\theta_{\text{ahead}} = \theta_t - \beta \eta v_t, \qquad v_{t+1} = \beta v_t + \nabla f(\theta_{\text{ahead}}), \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}$$
+#### 2. Polyak Momentum
 
-- **AdaGrad**:
-  $$G_{t+1} = G_t + \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{G_{t+1}} + \epsilon} \odot \mathbf{g}_t$$
+$$
+v_{t+1} = \beta v_t + \mathbf{g}_t, \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}
+$$
 
-- **RMSProp**:
-  $$v_{t+1} = \beta v_t + (1 - \beta) \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{v_{t+1}} + \epsilon} \odot \mathbf{g}_t$$
+#### 3. Nesterov Accelerated Gradient (NAG)
 
-- **Adam**:
-  $$m_{t+1} = \beta_1 m_t + (1 - \beta_1) \mathbf{g}_t, \qquad v_{t+1} = \beta_2 v_t + (1 - \beta_2) \mathbf{g}_t^2$$
-  $$\hat{m}_{t+1} = \frac{m_{t+1}}{1 - \beta_1^{t+1}}, \qquad \hat{v}_{t+1} = \frac{v_{t+1}}{1 - \beta_2^{t+1}}, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}$$
+$$
+\theta_{\text{ahead}} = \theta_t - \beta \eta v_t, \qquad v_{t+1} = \beta v_t + \nabla f(\theta_{\text{ahead}}), \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}
+$$
 
-- **AdamW**:
-  $$\theta_{t+1} = \theta_t - \eta \lambda \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}$$
+#### 4. AdaGrad
 
-- **Damped Newton's Method**:
-  $$\theta_{t+1} = \theta_t - \eta (\mathbf{H}_t + \mu \mathbf{I})^{-1} \mathbf{g}_t$$
+$$
+G_{t+1} = G_t + \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{G_{t+1}} + \epsilon} \odot \mathbf{g}_t
+$$
+
+#### 5. RMSProp
+
+$$
+v_{t+1} = \beta v_t + (1 - \beta) \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{v_{t+1}} + \epsilon} \odot \mathbf{g}_t
+$$
+
+#### 6. Adam
+
+$$
+m_{t+1} = \beta_1 m_t + (1 - \beta_1) \mathbf{g}_t, \qquad v_{t+1} = \beta_2 v_t + (1 - \beta_2) \mathbf{g}_t^2
+$$
+
+$$
+\hat{m}_{t+1} = \frac{m_{t+1}}{1 - \beta_1^{t+1}}, \qquad \hat{v}_{t+1} = \frac{v_{t+1}}{1 - \beta_2^{t+1}}, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}
+$$
+
+#### 7. AdamW
+
+$$
+\theta_{t+1} = \theta_t - \eta \lambda \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}
+$$
+
+#### 8. Damped Newton's Method
+
+$$
+\theta_{t+1} = \theta_t - \eta (\mathbf{H}_t + \mu \mathbf{I})^{-1} \mathbf{g}_t
+$$
 
 ---
 
@@ -310,23 +312,25 @@ The table below summarizes convergence iterations, final objective values, traje
 | **AdamW** | Decoupled Weight Decay | 1.62 | 2.18 | 7.96 ★ | **50 steps** ★ | 0.27 | 0.654 | 67.4 µs |
 | **Damped Newton** | 2nd-Order Curvature Exploitation | 14.20 | **41 steps** ★ | 52.56 | 0.00 | 0.27 | 0.831 | 95.8 µs |
 
-> **Key Architectural Insights & FAQ**:
->
-> 1. **Why does Damped Newton win on Rosenbrock?**
->    The Rosenbrock valley has extreme anisotropic curvature ($\lambda_{\max} / \lambda_{\min} \gg 10^3$). First-order methods bounce between steep walls, wasting gradient magnitude. By computing the inverse Hessian $(\mathbf{H} + \mu \mathbf{I})^{-1}$, Newton's method rotates the update vector directly along the curved valley floor, reaching $\epsilon$-convergence in just **41 steps**. However, solving the linear system incurs higher compute overhead (**95.8 µs/step** vs ~67 µs for first-order).
->
-> 2. **Why are steps to reach $\epsilon$ shown as numbers vs final loss?**
->    When an optimizer enters within $\epsilon = 0.01$ of the analytical global optimum $f^*$, the table displays the exact iteration count (e.g., `41 steps`). If the optimizer does not reach $\epsilon$ within the 250-step limit due to ill-conditioning or plateau stagnation, the table displays the final loss achieved.
->
-> 3. **Why is the final loss negative on Regularized Saddle?**
->    The test function $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has an indefinite saddle at the origin $(0, 0)$ and symmetric global minima at $(0, \pm\sqrt{5})$ with true analytical minimum $f^* = -2.5000$. Achieving a final loss of $-2.5000$ proves the optimizer built sufficient velocity to escape the saddle point and converge into the global basin.
->
-> 4. **What is Path Efficiency?**
->    Defined as the ratio of straight-line Euclidean displacement to total traversed arc length:
->    $$
->    \text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2} \in (0, 1]
->    $$
->    A value of $1.0$ represents a direct geodesic straight line, while lower values reflect wandering, spiral oscillation, or bouncing across ravine walls. **RMSProp** achieved the highest overall path efficiency (**0.854**) across the benchmark suite.
+### Key Architectural Insights & FAQ
+
+#### 1. Why does Damped Newton win on Rosenbrock?
+The Rosenbrock valley has extreme anisotropic curvature ($\lambda_{\max} / \lambda_{\min} \gg 10^3$). First-order methods bounce between steep walls, wasting gradient magnitude. By computing the inverse Hessian $(\mathbf{H} + \mu \mathbf{I})^{-1}$, Newton's method rotates the update vector directly along the curved valley floor, reaching $\epsilon$-convergence in just **41 steps**. However, solving the linear system incurs higher compute overhead (**95.8 µs/step** vs ~67 µs for first-order).
+
+#### 2. Why are steps to reach $\epsilon$ shown as numbers vs final loss?
+When an optimizer enters within $\epsilon = 0.01$ of the analytical global optimum $f^*$, the table displays the exact iteration count (e.g., `41 steps`). If the optimizer does not reach $\epsilon$ within the 250-step limit due to ill-conditioning or plateau stagnation, the table displays the final loss achieved.
+
+#### 3. Why is the final loss negative on Regularized Saddle?
+The test function $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has an indefinite saddle at the origin $(0, 0)$ and symmetric global minima at $(0, \pm\sqrt{5})$ with true analytical minimum $f^* = -2.5000$. Achieving a final loss of $-2.5000$ proves the optimizer built sufficient velocity to escape the saddle point and converge into the global basin.
+
+#### 4. What is Path Efficiency?
+Defined as the ratio of straight-line Euclidean displacement to total traversed arc length:
+
+$$
+\text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2} \in (0, 1]
+$$
+
+A value of $1.0$ represents a direct geodesic straight line, while lower values reflect wandering, spiral oscillation, or bouncing across ravine walls. **RMSProp** achieved the highest overall path efficiency (**0.854**) across the benchmark suite.
 
 ---
 
