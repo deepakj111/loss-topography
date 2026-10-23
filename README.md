@@ -17,16 +17,17 @@
   Featuring 10 loss functions, 9 mathematical landscapes, 8 optimizers, Hessian eigenspectrum diagnostics, distribution shift simulations, and filter-normalized neural network slices.
   <br />
   <br />
-  <a href="#-quickstart--local-replication"><b>⚡ Replicate Locally (10s)</b></a> &bull;
-  <a href="#-interactive-web-laboratory-streamlit--plotly"><b>🖥️ Launch Streamlit Lab</b></a> &bull;
-  <a href="#-zero-install-interactive-3d-visualizer"><b>🌐 Open 3D HTML Viewer</b></a> &bull;
-  <a href="#-theoretical-foundations"><b>📐 Mathematical Foundations</b></a>
+  <a href="#quickstart-replication"><b>⚡ Replicate Locally (10s)</b></a> &bull;
+  <a href="#interactive-web-laboratory"><b>🖥️ Launch Streamlit Lab</b></a> &bull;
+  <a href="#zero-install-interactive-3d"><b>🌐 Open 3D HTML Viewer</b></a> &bull;
+  <a href="#theoretical-foundations"><b>📐 Mathematical Foundations</b></a>
 </p>
 
 ---
 
 </div>
 
+<a id="river-of-optimization"></a>
 ## 🌊 The River of Optimization
 
 > *"Optimization dynamics mirror fluid mechanics: gradient descent acts like water flowing through mountain passes, seeking gravitational potential minimum."*
@@ -39,16 +40,24 @@ Watch an ensemble of 28 optimization streams flow downhill across rugged non-con
 
 ---
 
+<a id="zero-install-interactive-3d"></a>
 ## 🌐 Zero-Install Interactive 3D Visualizer
 
-You don't even need to install Python to explore the 3D loss surface and trajectories interactively!
+No Python installation is required to explore the 3D loss surface and trajectories interactively.
 
-We have compiled a standalone, self-contained **WebGL + Plotly 3D laboratory** directly into the repository:
-- 🔗 **[`assets/interactive_3d_landscape.html`](assets/interactive_3d_landscape.html)**
+I compiled a standalone, self-contained **WebGL + Plotly 3D laboratory** directly into the repository:
 
-**How to open:**
-- Double-click `assets/interactive_3d_landscape.html` in your file explorer to open it in Chrome, Firefox, Safari, or Edge.
-- **Controls:** Click & drag to rotate 360° &bull; Scroll to zoom &bull; Double-click to reset camera &bull; Hover over trajectories for $(x, y, \mathcal{L})$ telemetry &bull; Click legend items to isolate individual optimizers.
+- 🚀 **[Click Here to Launch Live WebGL 3D Preview](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** *(runs immediately in your browser, zero setup)*
+- 💻 **Local / Offline Viewing:** Download or open [`assets/interactive_3d_landscape.html`](assets/interactive_3d_landscape.html) directly in Chrome, Firefox, Safari, or Edge.
+
+> **Note on GitHub file browsing:** GitHub displays raw HTML code when viewing `.html` files in the repository browser. Use the **[Live WebGL 3D Preview link above](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** to render and interact with the full 3D visualizer!
+
+**Interactive 3D Controls:**
+- **Orbit & Rotate:** Click & drag with left mouse button for 360° rotation
+- **Zoom:** Mouse scroll wheel or trackpad pinch
+- **Pan:** Right-click & drag
+- **Point Telemetry:** Hover over any trajectory point to inspect exact $(\theta_1, \theta_2)$, iteration index, and loss $\mathcal{L}(\theta)$
+- **Algorithm Filtering:** Click optimizer names in the legend to toggle or isolate specific paths
 
 ---
 
@@ -91,7 +100,7 @@ Why do flat minima generalize better than sharp minima? (Hochreiter & Schmidhube
 ---
 
 ### 5. Empirical Convergence & Wall-Clock Efficiency
-Is an optimizer fast per step, or fast per unit of progress? We evaluate optimizers along two orthogonal axes: **Iteration Complexity** (steps to reach $\epsilon$-ball) and **Wall-Clock Computational Overhead** ($\mu\text{s}$ per gradient update step), alongside **Trajectory Path Efficiency** (ratio of Euclidean displacement to total path length).
+Is an optimizer fast per step, or fast per unit of progress? Optimizers are evaluated along two orthogonal axes: **Iteration Complexity** (steps to reach $\epsilon$-ball) and **Wall-Clock Computational Overhead** ($\mu\text{s}$ per gradient update step), alongside **Trajectory Path Efficiency** (ratio of Euclidean displacement to total path length).
 
 <div align="center">
   <img src="assets/loss_convergence_timing.png" alt="Convergence and Timing Benchmark" width="100%" />
@@ -100,7 +109,7 @@ Is an optimizer fast per step, or fast per unit of progress? We evaluate optimiz
 ---
 
 ### 6. Filter-Normalized Neural Network Loss Landscapes
-Directly replicating the landmark technique from Li et al. (2018), *"Visualizing the Loss Landscape of Neural Nets"*. By applying filter-wise scale normalization $\delta_{l,j} = \frac{d_{l,j}}{\|d_{l,j}\|_F} \|\theta^*_{l,j}\|_F$, we eliminate scale-invariance artifacts and expose the dramatic geometric smoothing effect introduced by skip connections.
+Directly replicating the landmark technique from Li et al. (2018), *"Visualizing the Loss Landscape of Neural Nets"*. By applying filter-wise scale normalization $\delta_{l,j} = \frac{d_{l,j}}{\|d_{l,j}\|_F} \|\theta^*_{l,j}\|_F$, this eliminates scale-invariance artifacts and exposes the dramatic geometric smoothing effect introduced by skip connections.
 
 <div align="center">
   <img src="assets/filter_normalized_nn_surface.png" alt="Filter Normalized NN Surface" width="100%" />
@@ -108,6 +117,7 @@ Directly replicating the landmark technique from Li et al. (2018), *"Visualizing
 
 ---
 
+<a id="quickstart-replication"></a>
 ## ⚡ Quickstart & Local Replication
 
 Every visual artifact in this repository can be replicated locally in under 10 seconds.
@@ -160,6 +170,7 @@ print("Eigenvalues:   ", saddle.eigenvalues(0.0, 0.0))
 
 ---
 
+<a id="theoretical-foundations"></a>
 ## 🔬 Theoretical Foundations
 
 ### 1. Loss Functions & Analytical Derivatives
@@ -208,7 +219,7 @@ $$
 
 ### 2. Benchmark Topographies & Critical Point Geometries
 
-The library provides 9 analytical surfaces with closed-form gradients $\nabla f$ and Hessian matrices $\mathbf{H} = \nabla^2 f$:
+`loss-topography` provides 9 analytical surfaces with closed-form gradients $\nabla f$ and Hessian matrices $\mathbf{H} = \nabla^2 f$:
 
 1. **Rosenbrock Banana Valley**: $f(x, y) = (a - x)^2 + b(y - x^2)^2$. Ill-conditioned curved parabolic valley where gradient descent oscillates endlessly across steep walls.
 2. **Rastrigin Surface**: $f(x, y) = 20 + x^2 - 10\cos(2\pi x) + y^2 - 10\cos(2\pi y)$. Highly non-convex field riddled with dense lattices of local minima.
@@ -298,6 +309,7 @@ Summary results from running `python scripts/run_benchmarks.py`:
 
 ---
 
+<a id="interactive-web-laboratory"></a>
 ## 🖥️ Interactive Web Laboratory (Streamlit + Plotly)
 
 Launch the full interactive visualization lab in your browser:
