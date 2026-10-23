@@ -161,25 +161,148 @@ def export_interactive_html():
 
     output_path = os.path.join(ASSETS_DIR, "interactive_3d_landscape.html")
 
-    # Custom wrapper with modern dark UI styling and help banner
-    html_content = fig.to_html(
-        include_plotlyjs="cdn",
-        full_html=True,
-    )
+    fig_json = fig.to_json()
 
-    # Inject stylish header bar and instructions
-    styled_header = f"""
-    <div style="background-color: {BG_PANEL}; border-bottom: 1px solid {GRID_COLOR}; padding: 12px 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: space-between; align-items: center;">
+    # Standalone, zero-dependency HTML template with resilient dynamic loader
+    # Works in local browsers, GitHub Pages, and sandboxed proxy iframes like htmlpreview.github.io
+    html_content = f"""<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>loss-topography — Interactive 3D Loss Landscape &amp; Optimizer Race</title>
+    <style>
+        * {{ box-sizing: border-box; }}
+        html, body {{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: {BG_CANVAS};
+            color: #F9FAFB;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }}
+        #top-bar {{
+            background-color: {BG_PANEL};
+            border-bottom: 1px solid {GRID_COLOR};
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 62px;
+            position: relative;
+            z-index: 10;
+        }}
+        #plot-viewport {{
+            width: 100%;
+            height: calc(100vh - 62px);
+            position: relative;
+            background-color: {BG_CANVAS};
+        }}
+        #loading-overlay {{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 50;
+            background: rgba(17, 24, 39, 0.95);
+            padding: 28px 40px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            min-width: 280px;
+        }}
+        .spinner {{
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #3B82F6;
+            animation: spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin: 0 auto 16px auto;
+        }}
+        @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+        #plotly-div {{
+            width: 100%;
+            height: 100%;
+        }}
+    </style>
+</head>
+<body>
+    <div id="top-bar">
         <div>
-            <h2 style="margin: 0; color: #FFFFFF; font-size: 16px; font-weight: 600;">🏔️ loss-topography &bull; 3D Interactive Loss Surface Laboratory</h2>
-            <p style="margin: 4px 0 0 0; color: {TEXT_LABEL}; font-size: 12px;">Click & drag to rotate 360&deg; | Scroll to zoom | Double-click to reset view | Click legend items to toggle optimizers</p>
+            <h2 style="margin: 0; color: #FFFFFF; font-size: 15px; font-weight: 600;">🏔️ loss-topography &bull; 3D Interactive Loss Surface Laboratory</h2>
+            <p style="margin: 3px 0 0 0; color: {TEXT_LABEL}; font-size: 11px;">Click &amp; drag to rotate 360&deg; &bull; Scroll to zoom &bull; Double-click to reset &bull; Click legend to isolate optimizers</p>
         </div>
         <div>
             <a href="https://github.com/deepakj111/loss-topography" target="_blank" style="background: #2563EB; color: white; text-decoration: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;">★ GitHub Repository</a>
         </div>
     </div>
-    """
-    html_content = html_content.replace("<body>", f"<body style='margin:0; background-color:{BG_CANVAS};'>{styled_header}")
+
+    <div id="plot-viewport">
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <div style="font-size: 15px; font-weight: 600; color: #FFFFFF;">Initializing 3D Loss Topography...</div>
+            <div id="loading-subtext" style="font-size: 12px; color: #60A5FA; margin-top: 6px;">Loading WebGL &amp; Plotly engine</div>
+        </div>
+        <div id="plotly-div"></div>
+    </div>
+
+    <script>
+    (function() {{
+        var figData = {fig_json};
+        var div = document.getElementById('plotly-div');
+        var loader = document.getElementById('loading-overlay');
+        var subtext = document.getElementById('loading-subtext');
+
+        function renderPlot() {{
+            if (typeof Plotly === 'undefined') {{
+                if (subtext) subtext.innerText = 'Waiting for Plotly runtime...';
+                setTimeout(renderPlot, 100);
+                return;
+            }}
+            if (subtext) subtext.innerText = 'Compiling WebGL shaders & rendering...';
+            Plotly.newPlot(div, figData.data, figData.layout, {{responsive: true, displayModeBar: true}}).then(function() {{
+                if (loader) loader.style.display = 'none';
+            }}).catch(function(err) {{
+                if (loader) {{
+                    loader.innerHTML = '<div style="color:#EF4444;font-weight:600;font-size:16px;">WebGL Initialization Error</div>' +
+                                       '<div style="color:#9CA3AF;font-size:12px;margin-top:8px;">' + (err.message || err) + '</div>' +
+                                       '<div style="color:#6B7280;font-size:11px;margin-top:8px;">Ensure hardware acceleration is enabled in your browser settings.</div>';
+                }}
+            }});
+        }}
+
+        // Resilient script loader: injects Plotly dynamically if not already available in environment
+        if (typeof Plotly !== 'undefined') {{
+            renderPlot();
+        }} else {{
+            var s = document.createElement('script');
+            s.src = 'https://cdn.plot.ly/plotly-2.35.2.min.js';
+            s.crossOrigin = 'anonymous';
+            s.onload = renderPlot;
+            s.onerror = function() {{
+                if (subtext) subtext.innerText = 'Switching to fallback CDN...';
+                var s2 = document.createElement('script');
+                s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js';
+                s2.onload = renderPlot;
+                s2.onerror = function() {{
+                    if (loader) {{
+                        loader.innerHTML = '<div style="color:#EF4444;font-weight:600;font-size:16px;">Failed to load Plotly CDN</div>' +
+                                           '<div style="color:#9CA3AF;font-size:12px;margin-top:8px;">Please check your network connection or adblocker rules.</div>';
+                    }}
+                }};
+                document.head.appendChild(s2);
+            }};
+            document.head.appendChild(s);
+        }}
+    }})();
+    </script>
+</body>
+</html>
+"""
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)

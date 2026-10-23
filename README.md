@@ -48,9 +48,6 @@ No Python installation is required to explore the 3D loss surface and trajectori
 I compiled a standalone, self-contained **WebGL + Plotly 3D laboratory** directly into the repository:
 
 - 🚀 **[Click Here to Launch Live WebGL 3D Preview](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** *(runs immediately in your browser, zero setup)*
-- 💻 **Local / Offline Viewing:** Download or open [`assets/interactive_3d_landscape.html`](assets/interactive_3d_landscape.html) directly in Chrome, Firefox, Safari, or Edge.
-
-> **Note on GitHub file browsing:** GitHub displays raw HTML code when viewing `.html` files in the repository browser. Use the **[Live WebGL 3D Preview link above](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** to render and interact with the full 3D visualizer!
 
 **Interactive 3D Controls:**
 - **Orbit & Rotate:** Click & drag with left mouse button for 360° rotation
