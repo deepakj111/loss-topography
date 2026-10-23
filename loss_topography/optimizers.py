@@ -128,9 +128,9 @@ class Optimizer:
                                      grad_fn=lambda xx, yy: surface.grad(np.array(xx), np.array(yy)),
                                      hessian_fn=lambda xx, yy: surface.hessian(xx, yy))
 
-            # Clip to prevent divergence to infinity
-            x_new = np.clip(x_new, -1e6, 1e6)
-            y_new = np.clip(y_new, -1e6, 1e6)
+            # Clip to prevent divergence to infinity while preventing floating-point overflow
+            x_new = np.clip(x_new, -50.0, 50.0)
+            y_new = np.clip(y_new, -50.0, 50.0)
             if not (np.isfinite(x_new) and np.isfinite(y_new)):
                 x_new, y_new = x, y  # stay put if step diverged
 

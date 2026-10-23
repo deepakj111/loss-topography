@@ -123,11 +123,15 @@ class Rosenbrock(Surface):
         )
 
     def f(self, x, y):
-        return (self.a - x) ** 2 + self.b * (y - x ** 2) ** 2
+        x_c = np.clip(x, -100.0, 100.0)
+        y_c = np.clip(y, -100.0, 100.0)
+        return (self.a - x_c) ** 2 + self.b * (y_c - x_c ** 2) ** 2
 
     def grad(self, x, y):
-        dx = -2 * (self.a - x) - 4 * self.b * x * (y - x ** 2)
-        dy = 2 * self.b * (y - x ** 2)
+        x_c = np.clip(x, -100.0, 100.0)
+        y_c = np.clip(y, -100.0, 100.0)
+        dx = -2 * (self.a - x_c) - 4 * self.b * x_c * (y_c - x_c ** 2)
+        dy = 2 * self.b * (y_c - x_c ** 2)
         return dx, dy
 
     def hessian(self, x, y):

@@ -117,13 +117,12 @@ def plotly_3d_scene(title: str = "") -> dict:
         gridcolor=GRID_COLOR,
         showbackground=True,
         tickfont=dict(color=TEXT_TICK, size=9),
-        titlefont=dict(color=TEXT_LABEL, size=11),
     )
     return dict(
         scene=dict(
-            xaxis={**axis_cfg, "title": "θ₁"},
-            yaxis={**axis_cfg, "title": "θ₂"},
-            zaxis={**axis_cfg, "title": "Loss"},
+            xaxis=dict(**axis_cfg, title=dict(text="θ₁", font=dict(color=TEXT_LABEL, size=11))),
+            yaxis=dict(**axis_cfg, title=dict(text="θ₂", font=dict(color=TEXT_LABEL, size=11))),
+            zaxis=dict(**axis_cfg, title=dict(text="Loss", font=dict(color=TEXT_LABEL, size=11))),
             bgcolor=BG_CANVAS,
         ),
     )
