@@ -50,15 +50,26 @@ I compiled a self-contained, client-side **WebGL 3D physics engine and visual la
 - 🚀 **[Click Here to Launch Live WebGL 3D Preview](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** *(runs immediately in your web browser, zero setup)*
 
 ### 🎮 Interactive Laboratory Capabilities:
-- **Live Optimization Simulation & Playback**: Watch optimizers race live down the landscape step-by-step. Features full playback controls: `▶ Play`, `⏸ Pause`, `⏭ Step`, `⏮ Reset`, scrubber timeline, and adjustable simulation speeds (`0.5x`, `1x`, `2x`, `4x`).
-- **Two Distinct Simulation Modes**:
-  1. 🏁 **Optimizer Race Arena**: Toggle and race 8 classic & modern optimizers simultaneously (SGD, Momentum, NAG, AdaGrad, RMSProp, Adam, AdamW, Damped Newton) with glowing leading particles and trailing ribbons.
-  2. 🌊 **Hydro River Flow**: Watch an ensemble of 24 concurrent liquid tributaries flow downhill across mountain passes and dynamically pool into the global minimum.
-- **Dynamic Landscape Selection**: Switch between **Multi-Modal Potential**, **Rosenbrock Banana Valley**, **Beale Function**, **Regularized Saddle**, and **Rastrigin Surface** in real time.
-- **Live Hyperparameter Tuning**: Interactively modify learning rate $\eta$, momentum $\beta$, and step budget $N$ using sliders and immediately observe how step-size governs stability vs. divergence.
-- **Interactive Click-to-Drop Starting Coordinates**: Click anywhere directly on the 3D surface mesh to drop initial coordinates $\theta_0$ and test basin sensitivity on the fly.
-- **Real-Time Telemetry HUD**: Live floating diagnostics display current loss $\mathcal{L}(\theta_t)$, trajectory path efficiency, iteration progress, and CPU step latency in microseconds.
-- **3D Camera Navigation**: Orbit 360° with left-click drag, zoom with scroll wheel / pinch, and pan with right-click drag.
+- **Zero-Lag 60 FPS Physics Engine**: Decoupled surface rendering and dynamic trajectory restyling inside `requestAnimationFrame` ensures fluid, buttery-smooth playback even during rapid parameter scrubs.
+- **Dual-View Perspective & 2D Contour Map**:
+  - `🌐 3D Perspective`: Interactive 360° orbiting terrain with depth, specular lighting, and floor-projected contours.
+  - `🗺️ 2D Contour Map`: Orthographic top-down bird's-eye view with crystal-clear iso-loss lines (the canonical Distill.pub & Alec Radford style) eliminating 3D perspective occlusion.
+  - `📐 Side Elevation`: Cross-sectional profile to inspect vertical barrier heights and valley floor gradients.
+- **Unambiguous Geometric Landmarks**:
+  - 🎯 **Global Minimum Beacon**: High-contrast gold beacon with analytical coordinates $(x^*, y^*)$ and minimum loss $f^*$.
+  - 📍 **Start Position Marker**: High-visibility ruby beacon at $\theta_0$.
+  - ⚠️ **Saddle Point Hazard**: Cross landmark with negative curvature warning at strict saddles.
+- **Two Dynamic Simulation Modes**:
+  1. 🏁 **Optimizer Race Arena**: Focuses by default on 3 pedagogical archetypes (**SGD**, **Momentum**, **Adam**) with instant toggles for **NAG**, **AdaGrad**, **RMSProp**, **AdamW**, and **Damped Newton**.
+  2. 🌊 **Hydro River Flow**: 26 liquid tributaries cascading downhill along lines of steepest descent ($-\nabla f$) with momentum, dynamically pooling into the global minimum lake with real-time potential energy drain tracking.
+- **Synchronized Convergence Mini-Graph**: A live SVG chart plotting $\log_{10}(\mathcal{L}(\theta_t))$ against iteration step $t$, showing the exact rate of loss reduction side-by-side with the physical terrain trajectories.
+- **Pedagogical Landscapes & Live Explanations**:
+  - 🥣 **Ill-Conditioned Quadratic Bowl** (*Distill.pub Benchmark*, $\kappa = 20$): Teaches why SGD oscillates violently across steep walls while Momentum speeds down the gentle axis.
+  - 🍌 **Rosenbrock Banana Valley** ($\kappa \gg 10^3$): Teaches parabolic ravine navigation with log-compressed canyon depth.
+  - 🕳️ **Regularized Saddle**: Teaches zero-gradient saddle stall vs. negative-curvature momentum escape.
+  - 🏔️ **Beale Function**: Teaches flat plateau stability vs. adaptive coordinate scaling.
+  - 🌊 **Multi-Modal Potential**: Teaches kinetic barrier crossing over mountain passes.
+- **Interactive Click-to-Drop Coordinates & Presets**: Click anywhere directly on the 3D terrain to reposition $\theta_0$ (or spawn a water droplet in river mode), or use one-click landscape presets (*Steep Wall*, *Valley Floor*, *Saddle Crest*).
 
 ---
 
