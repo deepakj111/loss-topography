@@ -174,10 +174,12 @@ def generate_hero_optimizer_race():
 
         return []
 
-    anim = FuncAnimation(fig, animate, frames=n_steps + 1,
-                         interval=1000 // GIF_FPS, blit=False)
+    # Subsample frames by 2 for lightweight fast-playing GIF
+    frame_list = list(range(0, n_steps + 1, 2))
+    anim = FuncAnimation(fig, animate, frames=frame_list,
+                         interval=50, blit=False)
     path = os.path.join(ASSETS_DIR, "hero_optimizer_race.gif")
-    anim.save(path, writer=PillowWriter(fps=GIF_FPS), dpi=DPI)
+    anim.save(path, writer=PillowWriter(fps=20), dpi=85)
     plt.close(fig)
     print(f"    ✓ Saved {path} ({os.path.getsize(path) / 1024:.0f} KB)")
 
@@ -621,6 +623,19 @@ if __name__ == "__main__":
     generate_convergence_timing()
     generate_nn_surface()
 
+    # Flowing river visualization & interactive 3D HTML
+    try:
+        from scripts.generate_river_flow import generate_optimization_river_flow
+        generate_optimization_river_flow()
+    except Exception as e:
+        print(f"  ⚠ Skipping river flow: {e}")
+
+    try:
+        from scripts.export_interactive_html import export_interactive_html
+        export_interactive_html()
+    except Exception as e:
+        print(f"  ⚠ Skipping interactive HTML: {e}")
+
     print()
     print("=" * 60)
     print("  All assets generated successfully!")
@@ -629,11 +644,13 @@ if __name__ == "__main__":
     # Verify all files exist and are non-empty
     expected = [
         "hero_optimizer_race.gif",
+        "optimization_river_flow.gif",
         "saddle_point_escape.gif",
         "sharp_vs_flat_minima.gif",
         "loss_function_atlas.png",
         "loss_convergence_timing.png",
         "filter_normalized_nn_surface.png",
+        "interactive_3d_landscape.html",
     ]
     all_ok = True
     for fname in expected:
@@ -647,7 +664,7 @@ if __name__ == "__main__":
             all_ok = False
 
     if all_ok:
-        print("\n  🎉 All 6 assets verified!")
+        print("\n  🎉 All visual assets and interactive artifacts verified!")
     else:
         print("\n  ❌ Some assets are missing!")
         sys.exit(1)

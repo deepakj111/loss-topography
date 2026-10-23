@@ -7,21 +7,52 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C.svg?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B.svg?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Plotly](https://img.shields.io/badge/Plotly-5.18+-3F4F75.svg?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com/)
-[![Tests Passing](https://img.shields.io/badge/tests-passing-brightgreen.svg?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Plotly 3D](https://img.shields.io/badge/Plotly_3D-Interactive-3F4F75.svg?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com/)
+[![Tests Passing](https://img.shields.io/badge/tests-67%20passed-brightgreen.svg?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <p align="center">
   <b>Explore why modern neural networks train, why optimizers fail or succeed, and how loss geometry governs generalization.</b>
   <br />
   Featuring 10 loss functions, 9 mathematical landscapes, 8 optimizers, Hessian eigenspectrum diagnostics, distribution shift simulations, and filter-normalized neural network slices.
+  <br />
+  <br />
+  <a href="#-quickstart--local-replication"><b>⚡ Replicate Locally (10s)</b></a> &bull;
+  <a href="#-interactive-web-laboratory-streamlit--plotly"><b>🖥️ Launch Streamlit Lab</b></a> &bull;
+  <a href="#-zero-install-interactive-3d-visualizer"><b>🌐 Open 3D HTML Viewer</b></a> &bull;
+  <a href="#-theoretical-foundations"><b>📐 Mathematical Foundations</b></a>
 </p>
 
 ---
 
 </div>
 
-## 🌟 Visual Showcase
+## 🌊 The River of Optimization
+
+> *"Optimization dynamics mirror fluid mechanics: gradient descent acts like water flowing through mountain passes, seeking gravitational potential minimum."*
+
+Watch an ensemble of 28 optimization streams flow downhill across rugged non-convex multi-modal topography. The streams begin along the high-elevation mountain ridge, branch through natural passes, dynamically navigate saddle barriers, and pool like bioluminescent liquid tributaries into the global minimum basin:
+
+<div align="center">
+  <img src="assets/optimization_river_flow.gif" alt="Optimization River Flow" width="100%" />
+</div>
+
+---
+
+## 🌐 Zero-Install Interactive 3D Visualizer
+
+You don't even need to install Python to explore the 3D loss surface and trajectories interactively!
+
+We have compiled a standalone, self-contained **WebGL + Plotly 3D laboratory** directly into the repository:
+- 🔗 **[`assets/interactive_3d_landscape.html`](assets/interactive_3d_landscape.html)**
+
+**How to open:**
+- Double-click `assets/interactive_3d_landscape.html` in your file explorer to open it in Chrome, Firefox, Safari, or Edge.
+- **Controls:** Click & drag to rotate 360° &bull; Scroll to zoom &bull; Double-click to reset camera &bull; Hover over trajectories for $(x, y, \mathcal{L})$ telemetry &bull; Click legend items to isolate individual optimizers.
+
+---
+
+## 🌟 Visual Showcase & Animations
 
 ### 1. The Multi-Modal Optimizer Race
 Watch **SGD**, **Momentum**, **RMSProp**, and **Adam** compete in real time across rugged, non-convex terrain with multiple local basins and saddle barriers. Notice how adaptive learning rates (RMSProp, Adam) navigate ravines while standard SGD stalls or oscillates violently across steep walls.
@@ -77,11 +108,63 @@ Directly replicating the landmark technique from Li et al. (2018), *"Visualizing
 
 ---
 
+## ⚡ Quickstart & Local Replication
+
+Every visual artifact in this repository can be replicated locally in under 10 seconds.
+
+### 1. One-Line Replication Runner
+```bash
+# Clone and install dependencies
+git clone https://github.com/deepakj111/loss-topography.git
+cd loss-topography
+pip install -r requirements.txt
+
+# Run the instant replication suite (generates plots in seconds)
+python scripts/quickstart_replicate.py
+```
+
+### 2. Three-Line Python Snippets
+
+#### Replicate an Optimizer Trajectory & Telemetry
+```python
+from loss_topography.surfaces import Rosenbrock
+from loss_topography.optimizers import Adam, MomentumSGD
+
+surface = Rosenbrock()
+adam = Adam(lr=0.04)
+log = adam.run(surface, x0=-0.8, y0=1.2, n_steps=100)
+
+print(f"Final Loss:      {log.losses[-1]:.4f}")
+print(f"Path Efficiency: {log.path_efficiency:.3f}")   # Geodesic ratio
+print(f"Step Latency:    {log.wall_clock_ms_per_step * 1000:.1f} µs")
+```
+
+#### Replicate Analytical Loss Function & Gradient
+```python
+import numpy as np
+from loss_topography.losses import Huber, Cauchy, FocalLoss
+
+residual = np.array([-2.0, 0.0, 1.5])
+print("Huber Value:", Huber(residual))
+print("Huber Grad: ", Huber.grad(residual))
+```
+
+#### Replicate Critical Point & Hessian Eigenspectrum
+```python
+from loss_topography.surfaces import StrictSaddle
+
+saddle = StrictSaddle()
+print("Curvature Type:", saddle.classify_point(0.0, 0.0))
+print("Eigenvalues:   ", saddle.eigenvalues(0.0, 0.0))
+```
+
+---
+
 ## 🔬 Theoretical Foundations
 
 ### 1. Loss Functions & Analytical Derivatives
 
-Every loss function in `loss-topography` is implemented with both closed-form vector evaluations and exact analytical first and second derivatives:
+Every loss function in `loss-topography` implements closed-form vector evaluations and exact analytical first and second derivatives:
 
 | Loss Function | Formulation $\mathcal{L}(y, \hat{y})$ | Primary Domain & Use Case | Robustness to Outliers |
 | :--- | :--- | :--- | :--- |
@@ -100,7 +183,7 @@ Every loss function in `loss-topography` is implemented with both closed-form ve
 
 ### 2. Benchmark Topographies & Critical Point Geometries
 
-The library provides 9 classical and challenging non-convex surfaces with full analytical gradients $\nabla f$ and Hessian matrices $\mathbf{H} = \nabla^2 f$:
+The library provides 9 analytical surfaces with closed-form gradients $\nabla f$ and Hessian matrices $\mathbf{H} = \nabla^2 f$:
 
 1. **Rosenbrock Banana Valley**: $f(x, y) = (a - x)^2 + b(y - x^2)^2$. Ill-conditioned curved parabolic valley where gradient descent oscillates endlessly across steep walls.
 2. **Rastrigin Surface**: $f(x, y) = 20 + x^2 - 10\cos(2\pi x) + y^2 - 10\cos(2\pi y)$. Highly non-convex field riddled with dense lattices of local minima.
@@ -119,11 +202,11 @@ The library provides 9 classical and challenging non-convex surfaces with full a
 
 - **Vanilla SGD**: $\theta_{t+1} = \theta_t - \eta \mathbf{g}_t$
 - **Polyak Momentum**: $v_{t+1} = \beta v_t + \mathbf{g}_t, \quad \theta_{t+1} = \theta_t - \eta v_{t+1}$
-- **Nesterov Accelerated Gradient (NAG)**: Evaluates gradient at the anticipated look-ahead position $\theta_t - \eta \beta v_t$ to dampen oscillations before hitting steep walls.
-- **AdaGrad**: Accumulates historical squared gradients $G_t = G_{t-1} + \mathbf{g}_t^2$ to provide coordinate-wise adaptive learning rates.
-- **RMSProp**: Exponentially decaying average of squared gradients $v_t = \beta v_{t-1} + (1-\beta)\mathbf{g}_t^2$ preventing vanishing updates.
+- **Nesterov Accelerated Gradient (NAG)**: Evaluates gradient at look-ahead position $\theta_t - \eta \beta v_t$ to dampen oscillations before hitting steep walls.
+- **AdaGrad**: Accumulates historical squared gradients $G_t = G_{t-1} + \mathbf{g}_t^2$ for coordinate-wise adaptive learning rates.
+- **RMSProp**: Exponentially decaying average of squared gradients $v_t = \beta v_{t-1} + (1-\beta)\mathbf{g}_t^2$.
 - **Adam**: First and second moment estimation with bias corrections $\hat{m}_t = \frac{m_t}{1-\beta_1^t}, \hat{v}_t = \frac{v_t}{1-\beta_2^t}$.
-- **AdamW**: Decoupled weight decay ensuring $L_2$ regularization acts directly on parameters rather than being distorted by gradient variance moments.
+- **AdamW**: Decoupled weight decay ensuring $L_2$ regularization acts directly on parameters without variance distortion.
 - **Damped Newton's Method**: Second-order curvature exploitation using regularized inverse Hessian $\theta_{t+1} = \theta_t - \eta (\mathbf{H} + \lambda \mathbf{I})^{-1} \mathbf{g}_t$.
 
 ---
@@ -134,13 +217,13 @@ When visualizing deep neural network loss surfaces in 2D parameter subspaces:
 $$\mathcal{L}(\alpha, \beta) = L(\theta^* + \alpha \delta + \beta \eta)$$
 random directions $d \in \mathbb{R}^D$ suffer from scale invariance in networks with batch normalization or ReLU activations. `loss-topography` normalizes each weight filter $d_{l, j}$ independently:
 $$\delta_{l, j} = \frac{d_{l, j}}{\|d_{l, j}\|_F} \|\theta^*_{l, j}\|_F$$
-This yields genuine, scale-invariant comparisons proving why **ResNet skip connections** eliminate chaotic, non-convex fracturing and create convex-like funnels.
+This yields scale-invariant comparisons proving why **ResNet skip connections** eliminate chaotic, non-convex fracturing and create convex-like funnels.
 
 ---
 
 ## 📊 Benchmark Suite Results
 
-Summary results from running `python scripts/run_benchmarks.py` across standard testbeds:
+Summary results from running `python scripts/run_benchmarks.py`:
 
 | Surface | Optimizer | Steps to Reach $\epsilon$ | Final Loss | Wall-Clock ($\mu\text{s}$/step) | Path Efficiency | Oscillation Metric |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -156,51 +239,6 @@ Summary results from running `python scripts/run_benchmarks.py` across standard 
 | Regularized Saddle | SGD | — | -2.5000 | 38.4 | 0.9896 | 0.01 |
 
 *Note: Path Efficiency is $\frac{\|\theta_{\text{final}} - \theta_0\|}{\sum \|\theta_{t+1} - \theta_t\|} \in (0, 1]$. An efficiency of 1.0 indicates a geodesic straight line, while lower values reflect wandering or oscillatory overshoot.*
-
----
-
-## 🚀 Quickstart & Installation
-
-### Option 1: Install from Source
-
-```bash
-git clone https://github.com/your-username/loss-topography.git
-cd loss-topography
-pip install -r requirements.txt
-```
-
-### Option 2: Python Library Usage
-
-```python
-import numpy as np
-from loss_topography.surfaces import Rosenbrock, StrictSaddle
-from loss_topography.optimizers import Adam, MomentumSGD, DampedNewton
-from loss_topography.losses import Huber, FocalLoss
-
-# 1. Inspect surface curvature & critical points
-surface = StrictSaddle()
-hessian_origin = surface.hessian(0.0, 0.0)
-eigs = surface.eigenvalues(0.0, 0.0)
-print(f"Hessian at (0,0):\n{hessian_origin}")
-print(f"Eigenvalues: {eigs} -> Classified as: {surface.classify_point(0.0, 0.0)}")
-
-# 2. Simulate optimizer race with full trajectory logging
-adam = Adam(lr=0.05)
-log = adam.run(surface, x0=0.0, y0=0.5, n_steps=100)
-
-print(f"Final Position: ({log.xs[-1]:.4f}, {log.ys[-1]:.4f})")
-print(f"Total Path Length: {log.path_length:.3f}")
-print(f"Path Efficiency:   {log.path_efficiency:.3f}")
-print(f"Mean Step Latency: {log.wall_clock_ms_per_step * 1000:.1f} µs")
-
-# 3. Compute loss function value and exact analytical gradient
-huber = Huber(delta=1.0)
-residual = np.array([-2.5, 0.0, 1.2])
-loss_val = huber(residual)
-grad_val = huber.grad(residual)
-print(f"Huber loss: {loss_val}")
-print(f"Huber grad: {grad_val}")
-```
 
 ---
 
@@ -244,14 +282,16 @@ The web application provides five dedicated investigation rooms:
 
 ## 🎨 Headless Asset Generation Pipeline
 
-Generate all dark-mode GIFs and high-resolution publication-quality PNG charts in deterministic headless mode:
+Regenerate all dark-mode GIFs, HTML visualizers, and PNG charts in deterministic headless mode:
 
 ```bash
 python scripts/generate_readme_assets.py
 ```
 
 Outputs generated into `assets/`:
+- `assets/optimization_river_flow.gif` (Hydrodynamic river flow down non-convex potential)
 - `assets/hero_optimizer_race.gif` (Multi-modal 3D/2D synchronized race)
+- `assets/interactive_3d_landscape.html` (Standalone 3D orbit WebGL viewer)
 - `assets/saddle_point_escape.gif` (Strict saddle negative curvature dynamics)
 - `assets/sharp_vs_flat_minima.gif` (Distribution shift & generalization gap animation)
 - `assets/loss_function_atlas.png` (High-DPI 10-loss taxonomy panel)
@@ -265,11 +305,13 @@ Outputs generated into `assets/`:
 ```
 loss-topography/
 ├── app.py                           # Interactive Streamlit + Plotly multi-tab web application
-├── assets/                          # Generated high-resolution GIFs and PNG figures
+├── assets/                          # Generated high-resolution GIFs, HTML visualizer, and PNG figures
 │   ├── filter_normalized_nn_surface.png
 │   ├── hero_optimizer_race.gif
+│   ├── interactive_3d_landscape.html
 │   ├── loss_convergence_timing.png
 │   ├── loss_function_atlas.png
+│   ├── optimization_river_flow.gif
 │   ├── saddle_point_escape.gif
 │   └── sharp_vs_flat_minima.gif
 ├── loss_topography/                 # Modular core library
@@ -282,7 +324,10 @@ loss-topography/
 │   ├── surfaces.py                  # 9 Analytical surfaces, critical point classifier
 │   └── theme.py                     # Curated dark-mode palette & plotting styles
 ├── scripts/                         # Executable CLI tools & renderers
-│   ├── generate_readme_assets.py    # Headless GIF/PNG generation pipeline
+│   ├── export_interactive_html.py   # Standalone 3D HTML exporter
+│   ├── generate_readme_assets.py    # Master headless asset generation pipeline
+│   ├── generate_river_flow.py       # Optimization river flow animation generator
+│   ├── quickstart_replicate.py      # 10-second local replication script
 │   └── run_benchmarks.py            # Comprehensive benchmark runner
 ├── tests/                           # Complete test suite (67 unit tests)
 │   ├── test_losses.py               # Finite difference verification & properties
@@ -293,7 +338,7 @@ loss-topography/
 ├── pyproject.toml                   # Modern packaging metadata
 ├── requirements.txt                 # Pinned dependencies
 ├── LICENSE                          # MIT License
-└── README.md                        # Project documentation & visual showcase
+└── README.md                        # Flagship documentation & visual showcase
 ```
 
 ---

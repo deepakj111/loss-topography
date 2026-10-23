@@ -30,6 +30,9 @@ class LossFunction:
     def value(self, r: np.ndarray) -> np.ndarray:
         return self._value_fn(np.asarray(r, dtype=np.float64))
 
+    def __call__(self, r: np.ndarray) -> np.ndarray:
+        return self.value(r)
+
     def grad(self, r: np.ndarray) -> np.ndarray:
         return self._grad_fn(np.asarray(r, dtype=np.float64))
 

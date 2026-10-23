@@ -46,6 +46,25 @@ class Surface:
         eigvals, eigvecs = np.linalg.eigh(H)
         return eigvals, eigvecs
 
+    def eigenvalues(self, x: float, y: float) -> np.ndarray:
+        """Return eigenvalues of the Hessian at (x, y)."""
+        eigvals, _ = self.hessian_eig(x, y)
+        return eigvals
+
+    def classify_point(self, x: float, y: float, tol: float = 1e-4) -> str:
+        """Classify curvature by Hessian eigenvalue signs."""
+        eigs = self.eigenvalues(x, y)
+        l1, l2 = float(eigs[0]), float(eigs[1])
+        if abs(l1) < tol or abs(l2) < tol:
+            return "Degenerate Critical Point"
+        elif l1 > 0 and l2 > 0:
+            return "Local Minimum (Strictly Convex)"
+        elif l1 < 0 and l2 < 0:
+            return "Local Maximum (Strictly Concave)"
+        elif (l1 > 0 and l2 < 0) or (l1 < 0 and l2 > 0):
+            return "Strict Saddle Point (Indefinite Curvature)"
+        return "Indefinite Point"
+
     def meshgrid(self, n: int = 200):
         xs = np.linspace(*self.x_range, n)
         ys = np.linspace(*self.y_range, n)
