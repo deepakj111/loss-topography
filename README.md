@@ -166,18 +166,43 @@ print("Eigenvalues:   ", saddle.eigenvalues(0.0, 0.0))
 
 Every loss function in `loss-topography` implements closed-form vector evaluations and exact analytical first and second derivatives:
 
-| Loss Function | Formulation $\mathcal{L}(y, \hat{y})$ | Primary Domain & Use Case | Robustness to Outliers |
+| Loss Function | Mathematical Formulation | Primary Domain & Use Case | Robustness to Outliers |
 | :--- | :--- | :--- | :--- |
-| **MSE ($L_2$)** | $\frac{1}{2}(y - \hat{y})^2$ | Gaussian noise regression | Low (quadratic penalty $\propto r^2$) |
-| **MAE ($L_1$)** | $\|y - \hat{y}\|$ | Laplace noise, median regression | High (linear penalty $\propto \|r\|$) |
-| **Huber Loss** | $\begin{cases} \frac{1}{2}r^2 & \|r\|\le\delta \\ \delta(\|r\| - \frac{1}{2}\delta) & \text{otherwise} \end{cases}$ | Robust regression, RL value targets | High (smooth transition at $\delta$) |
-| **Log-Cosh** | $\log(\cosh(y - \hat{y}))$ | Smooth $L_1$ approximation | High (everywhere twice differentiable) |
-| **Quantile (Pinball)** | $\max(\tau r, (\tau - 1)r)$ | Uncertainty estimation, risk bounds | High (asymmetric quantile regression) |
-| **Binary Cross-Entropy** | $-[y \log \hat{y} + (1-y)\log(1-\hat{y})]$ | Probabilistic binary classification | Standard cross-entropy |
-| **Focal Loss** | $-\alpha_t (1 - p_t)^\gamma \log(p_t)$ | Severe class imbalance, object detection | Down-weights easy examples ($\gamma > 0$) |
-| **Hinge Loss** | $\max(0, 1 - y \hat{y})$ | Maximum-margin classification (SVM) | Sparse support vectors |
-| **KL Divergence** | $\sum p \log(p / q)$ | Knowledge distillation, VAEs | Asymmetric information divergence |
-| **Cauchy Loss** | $\frac{c^2}{2} \log\left(1 + \frac{r^2}{c^2}\right)$ | Computer vision robust estimation | Extreme (descending influence curve) |
+| **MSE ($L_2$)** | `½ (y - ŷ)²` | Gaussian noise regression | Low (quadratic penalty $\propto r^2$) |
+| **MAE ($L_1$)** | `\|y - ŷ\|` | Laplace noise, median regression | High (linear penalty $\propto \|r\|$) |
+| **Huber Loss** | `½ r²` (if `\|r\| ≤ δ`), else `δ(\|r\| - ½δ)` | Robust regression, RL value targets | High (smooth transition at $\delta$) |
+| **Log-Cosh** | `log(cosh(y - ŷ))` | Smooth $L_1$ approximation | High (everywhere twice differentiable) |
+| **Quantile (Pinball)** | `max(τ·r, (τ - 1)·r)` | Uncertainty estimation, risk bounds | High (asymmetric quantile regression) |
+| **Binary Cross-Entropy** | `-[y·log(ŷ) + (1-y)·log(1-ŷ)]` | Probabilistic binary classification | Standard cross-entropy |
+| **Focal Loss** | `-α_t (1 - p_t)^γ log(p_t)` | Severe class imbalance, object detection | Down-weights easy examples ($\gamma > 0$) |
+| **Hinge Loss** | `max(0, 1 - y·ŷ)` | Maximum-margin classification (SVM) | Sparse support vectors |
+| **KL Divergence** | `∑ p·log(p / q)` | Knowledge distillation, VAEs | Asymmetric information divergence |
+| **Cauchy Loss** | `(c²/2) log(1 + r²/c²)` | Computer vision robust estimation | Extreme (descending influence curve) |
+
+<details>
+<summary><b>📐 Click to Expand Full LaTeX Definitions & Derivatives</b></summary>
+
+#### Huber Loss
+$$
+\mathcal{L}_\delta(r) = \begin{cases} \frac{1}{2}r^2 & \text{if } |r| \le \delta \\ \delta(|r| - \frac{1}{2}\delta) & \text{otherwise} \end{cases}, \qquad \nabla \mathcal{L}_\delta(r) = \begin{cases} r & \text{if } |r| \le \delta \\ \delta \operatorname{sgn}(r) & \text{otherwise} \end{cases}
+$$
+
+#### Focal Loss (Lin et al., ICCV 2017)
+$$
+\text{FL}(p_t) = -\alpha_t (1 - p_t)^\gamma \log(p_t), \qquad p_t = \begin{cases} p & \text{if } y = 1 \\ 1 - p & \text{otherwise} \end{cases}
+$$
+
+#### Cauchy / Lorentzian Loss
+$$
+\rho(r) = \frac{c^2}{2} \log\left(1 + \frac{r^2}{c^2}\right), \qquad \psi(r) = \frac{r}{1 + (r/c)^2}
+$$
+
+#### Log-Cosh Loss
+$$
+\mathcal{L}(r) = \log(\cosh(r)), \qquad \nabla \mathcal{L}(r) = \tanh(r), \qquad \nabla^2 \mathcal{L}(r) = \operatorname{sech}^2(r)
+$$
+
+</details>
 
 ---
 
@@ -192,7 +217,7 @@ The library provides 9 analytical surfaces with closed-form gradients $\nabla f$
 5. **Himmelblau Multimodal**: Four distinct global minima with identical zero loss, serving as a clean test of initialization basin sensitivity.
 6. **Strict Saddle**: $f(x, y) = x^2 - y^2$. Eigenvalues $\lambda_1 = 2, \lambda_2 = -2$. Pure hyperbolic saddle showcasing negative curvature escape.
 7. **Monkey Saddle**: $f(x, y) = x^3 - 3xy^2$. Degenerate higher-order saddle where $\mathbf{H}(0, 0) = \mathbf{0}$, rendering standard Newton steps undefined.
-8. **Regularized Saddle**: $f(x, y) = \frac{1}{2}(x^2 - y^2) + \frac{1}{12}y^4$. Escape along $y$ leads to bounded, stable symmetric double minima at $(0, \pm\sqrt{3})$.
+8. **Regularized Saddle**: $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$. Escape along $y$ leads to bounded, stable symmetric double minima at $(0, \pm\sqrt{5})$ with minimum value $f^* = -2.5000$.
 
 ---
 
@@ -200,23 +225,47 @@ The library provides 9 analytical surfaces with closed-form gradients $\nabla f$
 
 `loss-topography` implements 8 fundamental and modern optimizers with explicit trajectory logging:
 
-- **Vanilla SGD**: $\theta_{t+1} = \theta_t - \eta \mathbf{g}_t$
-- **Polyak Momentum**: $v_{t+1} = \beta v_t + \mathbf{g}_t, \quad \theta_{t+1} = \theta_t - \eta v_{t+1}$
-- **Nesterov Accelerated Gradient (NAG)**: Evaluates gradient at look-ahead position $\theta_t - \eta \beta v_t$ to dampen oscillations before hitting steep walls.
-- **AdaGrad**: Accumulates historical squared gradients $G_t = G_{t-1} + \mathbf{g}_t^2$ for coordinate-wise adaptive learning rates.
-- **RMSProp**: Exponentially decaying average of squared gradients $v_t = \beta v_{t-1} + (1-\beta)\mathbf{g}_t^2$.
-- **Adam**: First and second moment estimation with bias corrections $\hat{m}_t = \frac{m_t}{1-\beta_1^t}, \hat{v}_t = \frac{v_t}{1-\beta_2^t}$.
-- **AdamW**: Decoupled weight decay ensuring $L_2$ regularization acts directly on parameters without variance distortion.
-- **Damped Newton's Method**: Second-order curvature exploitation using regularized inverse Hessian $\theta_{t+1} = \theta_t - \eta (\mathbf{H} + \lambda \mathbf{I})^{-1} \mathbf{g}_t$.
+- **Vanilla Gradient Descent (SGD)**:
+  $$\theta_{t+1} = \theta_t - \eta \mathbf{g}_t$$
+
+- **Polyak Momentum**:
+  $$v_{t+1} = \beta v_t + \mathbf{g}_t, \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}$$
+
+- **Nesterov Accelerated Gradient (NAG)**:
+  $$\theta_{\text{ahead}} = \theta_t - \beta \eta v_t, \qquad v_{t+1} = \beta v_t + \nabla f(\theta_{\text{ahead}}), \qquad \theta_{t+1} = \theta_t - \eta v_{t+1}$$
+
+- **AdaGrad**:
+  $$G_{t+1} = G_t + \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{G_{t+1}} + \epsilon} \odot \mathbf{g}_t$$
+
+- **RMSProp**:
+  $$v_{t+1} = \beta v_t + (1 - \beta) \mathbf{g}_t^2, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{v_{t+1}} + \epsilon} \odot \mathbf{g}_t$$
+
+- **Adam**:
+  $$m_{t+1} = \beta_1 m_t + (1 - \beta_1) \mathbf{g}_t, \qquad v_{t+1} = \beta_2 v_t + (1 - \beta_2) \mathbf{g}_t^2$$
+  $$\hat{m}_{t+1} = \frac{m_{t+1}}{1 - \beta_1^{t+1}}, \qquad \hat{v}_{t+1} = \frac{v_{t+1}}{1 - \beta_2^{t+1}}, \qquad \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}$$
+
+- **AdamW**:
+  $$\theta_{t+1} = \theta_t - \eta \lambda \theta_t - \frac{\eta}{\sqrt{\hat{v}_{t+1}} + \epsilon} \hat{m}_{t+1}$$
+
+- **Damped Newton's Method**:
+  $$\theta_{t+1} = \theta_t - \eta (\mathbf{H}_t + \mu \mathbf{I})^{-1} \mathbf{g}_t$$
 
 ---
 
 ### 4. Filter-Wise Normalized Slices (Li et al., NeurIPS 2018)
 
 When visualizing deep neural network loss surfaces in 2D parameter subspaces:
-$$\mathcal{L}(\alpha, \beta) = L(\theta^* + \alpha \delta + \beta \eta)$$
+
+$$
+\mathcal{L}(\alpha, \beta) = L(\theta^* + \alpha \delta + \beta \eta)
+$$
+
 random directions $d \in \mathbb{R}^D$ suffer from scale invariance in networks with batch normalization or ReLU activations. `loss-topography` normalizes each weight filter $d_{l, j}$ independently:
-$$\delta_{l, j} = \frac{d_{l, j}}{\|d_{l, j}\|_F} \|\theta^*_{l, j}\|_F$$
+
+$$
+\delta_{l, j} = \frac{d_{l, j}}{\Vert d_{l, j} \Vert_F} \Vert \theta^*_{l, j} \Vert_F
+$$
+
 This yields scale-invariant comparisons proving why **ResNet skip connections** eliminate chaotic, non-convex fracturing and create convex-like funnels.
 
 ---
@@ -238,7 +287,14 @@ Summary results from running `python scripts/run_benchmarks.py`:
 | Regularized Saddle | Adam | — | -2.5000 | 40.2 | 0.6705 | 0.01 |
 | Regularized Saddle | SGD | — | -2.5000 | 38.4 | 0.9896 | 0.01 |
 
-*Note: Path Efficiency is $\frac{\|\theta_{\text{final}} - \theta_0\|}{\sum \|\theta_{t+1} - \theta_t\|} \in (0, 1]$. An efficiency of 1.0 indicates a geodesic straight line, while lower values reflect wandering or oscillatory overshoot.*
+> **Metric Definitions & Interpretation**:
+> - **Steps to Reach $\epsilon$**: Number of iterations required to reach within $\epsilon = 0.01$ of the analytical global optimum $f^*$. An em-dash (`—`) indicates the optimizer did not converge within the maximum step budget (300 steps) due to ill-conditioning or local minima stagnation.
+> - **Final Loss on Regularized Saddle**: The Regularized Saddle $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has global minima at $(0, \pm\sqrt{5})$ with true analytical minimum value $f^* = -2.5000$. Achieving $-2.5000$ indicates successful saddle escape.
+> - **Path Efficiency**: Ratio of straight-line Euclidean displacement to total traversed arc length:
+>   $$
+>   \text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2} \in (0, 1]
+>   $$
+>   A value of $1.0$ represents a direct geodesic, while lower values reflect oscillatory wandering or wall bouncing.
 
 ---
 
