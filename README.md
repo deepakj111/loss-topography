@@ -41,20 +41,24 @@ Watch an ensemble of 28 optimization streams flow downhill across rugged non-con
 ---
 
 <a id="zero-install-interactive-3d"></a>
-## 🌐 Zero-Install Interactive 3D Visualizer
+## 🌐 Zero-Install Interactive 3D Visualizer & Physics Lab
 
-No Python installation is required to explore the 3D loss surface and trajectories interactively.
+No Python installation, environment setup, or GPU hardware is required to experiment with 3D loss geometry and optimizer dynamics.
 
-I compiled a standalone, self-contained **WebGL + Plotly 3D laboratory** directly into the repository:
+I compiled a self-contained, client-side **WebGL 3D physics engine and visual laboratory** directly into the repository:
 
-- 🚀 **[Click Here to Launch Live WebGL 3D Preview](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** *(runs immediately in your browser, zero setup)*
+- 🚀 **[Click Here to Launch Live WebGL 3D Preview](https://htmlpreview.github.io/?https://github.com/deepakj111/loss-topography/blob/main/assets/interactive_3d_landscape.html)** *(runs immediately in your web browser, zero setup)*
 
-**Interactive 3D Controls:**
-- **Orbit & Rotate:** Click & drag with left mouse button for 360° rotation
-- **Zoom:** Mouse scroll wheel or trackpad pinch
-- **Pan:** Right-click & drag
-- **Point Telemetry:** Hover over any trajectory point to inspect exact $(\theta_1, \theta_2)$, iteration index, and loss $\mathcal{L}(\theta)$
-- **Algorithm Filtering:** Click optimizer names in the legend to toggle or isolate specific paths
+### 🎮 Interactive Laboratory Capabilities:
+- **Live Optimization Simulation & Playback**: Watch optimizers race live down the landscape step-by-step. Features full playback controls: `▶ Play`, `⏸ Pause`, `⏭ Step`, `⏮ Reset`, scrubber timeline, and adjustable simulation speeds (`0.5x`, `1x`, `2x`, `4x`).
+- **Two Distinct Simulation Modes**:
+  1. 🏁 **Optimizer Race Arena**: Toggle and race 8 classic & modern optimizers simultaneously (SGD, Momentum, NAG, AdaGrad, RMSProp, Adam, AdamW, Damped Newton) with glowing leading particles and trailing ribbons.
+  2. 🌊 **Hydro River Flow**: Watch an ensemble of 24 concurrent liquid tributaries flow downhill across mountain passes and dynamically pool into the global minimum.
+- **Dynamic Landscape Selection**: Switch between **Multi-Modal Potential**, **Rosenbrock Banana Valley**, **Beale Function**, **Regularized Saddle**, and **Rastrigin Surface** in real time.
+- **Live Hyperparameter Tuning**: Interactively modify learning rate $\eta$, momentum $\beta$, and step budget $N$ using sliders and immediately observe how step-size governs stability vs. divergence.
+- **Interactive Click-to-Drop Starting Coordinates**: Click anywhere directly on the 3D surface mesh to drop initial coordinates $\theta_0$ and test basin sensitivity on the fly.
+- **Real-Time Telemetry HUD**: Live floating diagnostics display current loss $\mathcal{L}(\theta_t)$, trajectory path efficiency, iteration progress, and CPU step latency in microseconds.
+- **3D Camera Navigation**: Orbit 360° with left-click drag, zoom with scroll wheel / pinch, and pan with right-click drag.
 
 ---
 
