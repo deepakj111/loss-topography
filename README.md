@@ -294,6 +294,82 @@ To rigorously compare optimization mechanics, all 8 optimizers are benchmarked a
   <img src="assets/optimizer_benchmark_matrix.png" alt="Multi-Surface Optimizer Benchmark Dashboard" width="100%" />
 </div>
 
+### Per-Surface Raw Performance Breakdown
+
+Before aggregating across all domains, the raw telemetry for each individual landscape reveals distinct failure and success modes across condition numbers, saddle barriers, and non-convex ravines:
+
+#### 1. Beale Function ($\kappa \gg 10^3$, Flat Wings & Narrow Ravine)
+*Starting Point: $(\theta_1, \theta_2) = (2.0, 2.0)$ &bull; Global Optimum: $f^* = 0.0$*
+
+| Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **SGD** | 1.53e11 | — | 0.002 | 107.4 µs | Gradient explosion across flat wings |
+| **Momentum** | 1.53e11 | — | 0.002 | 87.5 µs | Gradient explosion across flat wings |
+| **NAG** | 1.53e11 | — | 0.002 | 92.8 µs | Gradient explosion across flat wings |
+| **AdaGrad** | **0.4687** ★ | — | 0.701 | 85.1 µs | Coordinate dampening stabilizes trajectory |
+| **RMSProp** | 0.5694 | — | 0.707 | 84.7 µs | Smooth descent along flat ravine |
+| **Adam** | 1.4517 | — | 0.702 | 86.0 µs | Rapid initial progress, slight ravine oscillation |
+| **AdamW** | 1.6215 | — | **0.722** ★ | 86.1 µs | Decoupled decay tracks valley curvature |
+| **Damped Newton** | 14.2031 | — | 0.994 | 161.9 µs | Ill-conditioned Hessian inversion near flat regions |
+
+#### 2. Rosenbrock Banana Valley (Parabolic Ravine)
+*Starting Point: $(\theta_1, \theta_2) = (-0.8, 1.2)$ &bull; Global Optimum: $f^* = 0.0$*
+
+| Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **SGD** | 6.00e8 | — | 0.003 | 64.5 µs | Severe oscillation between ravine walls |
+| **Momentum** | 6.00e8 | — | 0.003 | 44.5 µs | Overshoots parabolic canyon walls |
+| **NAG** | 6.00e8 | — | 0.003 | 44.3 µs | Overshoots parabolic canyon walls |
+| **AdaGrad** | 2.3256 | — | 0.506 | 46.9 µs | Step size collapses before valley turn |
+| **RMSProp** | 1.1609 | — | **0.828** ★ | 45.5 µs | High efficiency along parabolic curve |
+| **Adam** | 2.4008 | — | 0.634 | 48.1 µs | Robust progress along valley floor |
+| **AdamW** | 2.1756 | — | 0.661 | 46.8 µs | Navigates curvature steadily |
+| **Damped Newton** | **0.0000** ★ | **41 steps** ★ | 0.372 | 73.9 µs | **Fastest convergence via 2nd-order curvature** |
+
+#### 3. Rastrigin Surface (Dense Local Minima Lattice)
+*Starting Point: $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; Global Optimum: $f^* = 0.0$*
+
+| Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **SGD** | 23.5962 | — | 0.005 | 46.5 µs | Trapped in high-elevation local minimum |
+| **Momentum** | 11.9427 | — | 0.057 | 50.0 µs | Inertia escapes first local basin |
+| **NAG** | 10.3858 | — | 0.018 | 47.7 µs | Lookahead escapes initial barrier |
+| **AdaGrad** | **7.9597** ★ | — | 0.415 | 43.2 µs | Trapped in deep secondary basin |
+| **RMSProp** | **7.9597** ★ | — | **1.000** ★ | 43.7 µs | Direct line to deep secondary basin |
+| **Adam** | **7.9597** ★ | — | 0.533 | 45.1 µs | Trapped in deep secondary basin |
+| **AdamW** | **7.9598** ★ | — | 0.531 | 44.2 µs | Trapped in deep secondary basin |
+| **Damped Newton** | 52.5637 | — | 1.000 | 59.3 µs | Gradient points toward nearest local quadratic |
+
+#### 4. Regularized Saddle (Strict Saddle Escape & Negative Curvature)
+*Starting Point: $(\theta_1, \theta_2) = (0.05, 0.1)$ &bull; Global Optimum: $f^* = -2.5000$*
+
+| Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **SGD** | -2.4988 | — | **0.998** ★ | 38.3 µs | Slow crawl along saddle plateau |
+| **Momentum** | **-2.5000** ★ | 44 steps | 0.805 | 37.9 µs | Builds velocity along negative curvature |
+| **NAG** | **-2.5000** ★ | 43 steps | 0.866 | 37.3 µs | Builds velocity along negative curvature |
+| **AdaGrad** | **-2.5000** ★ | **15 steps** ★ | 0.879 | 40.0 µs | **Fastest saddle point escape** |
+| **RMSProp** | **-2.5000** ★ | 40 steps | 0.734 | 38.9 µs | Escapes saddle rapidly along $y$-axis |
+| **Adam** | **-2.5000** ★ | 49 steps | 0.839 | 39.6 µs | Rapid escape and stable convergence |
+| **AdamW** | **-2.5000** ★ | 50 steps | 0.844 | 39.8 µs | Rapid escape and stable convergence |
+| **Damped Newton** | 0.0000 | — | 0.898 | 52.5 µs | Trapped at zero-gradient saddle point |
+
+#### 5. Multi-Modal Landscape (Competing Basins & Ridges)
+*Starting Point: $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; Global Optimum: $f^* = -6.55$*
+
+| Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **SGD** | **0.2693** ★ | — | **1.000** ★ | 129.9 µs | Settles into primary accessible basin |
+| **Momentum** | **0.2693** ★ | — | 0.731 | 126.9 µs | Settles into primary accessible basin |
+| **NAG** | **0.2693** ★ | — | 0.807 | 130.0 µs | Settles into primary accessible basin |
+| **AdaGrad** | **0.2693** ★ | — | 0.826 | 129.7 µs | Settles into primary accessible basin |
+| **RMSProp** | **0.2693** ★ | — | **1.000** ★ | 128.5 µs | Settles into primary accessible basin |
+| **Adam** | **0.2693** ★ | — | 0.505 | 130.5 µs | Settles into primary accessible basin |
+| **AdamW** | **0.2693** ★ | — | 0.513 | 130.2 µs | Settles into primary accessible basin |
+| **Damped Newton** | **0.2693** ★ | — | 0.892 | 187.0 µs | Settles into primary accessible basin |
+
+---
+
 ### Aggregated Performance Matrix
 
 The table below summarizes convergence iterations, final objective values, trajectory path efficiencies, and wall-clock latencies across all 8 optimizers and 5 benchmark surfaces:
