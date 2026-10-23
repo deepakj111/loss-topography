@@ -200,7 +200,7 @@ Every loss function in `loss-topography` implements closed-form vector evaluatio
 5. **Himmelblau Multimodal**: Four distinct global minima with identical zero loss, serving as a clean test of initialization basin sensitivity.
 6. **Strict Saddle**: $f(x, y) = x^2 - y^2$. Eigenvalues $\lambda_1 = 2, \lambda_2 = -2$. Pure hyperbolic saddle showcasing negative curvature escape.
 7. **Monkey Saddle**: $f(x, y) = x^3 - 3xy^2$. Degenerate higher-order saddle where $\mathbf{H}(0, 0) = \mathbf{0}$, rendering standard Newton steps undefined.
-8. **Regularized Saddle**: $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$. Escape along $y$ leads to bounded, stable symmetric double minima at $(0, \pm\sqrt{5})$ with minimum value $f^* = -2.5000$.
+8. **Regularized Saddle**: $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$. Escape along $y$ leads to bounded, stable symmetric double minima at $(0, \pm\sqrt{5})$ with minimum value $f^\star = -2.5000$.
 
 ---
 
@@ -287,7 +287,7 @@ To rigorously compare optimization mechanics, all 8 optimizers are benchmarked a
 1. **Beale Function**: Curved valley with extremely flat outer wings and high condition number $\kappa \gg 10^3$.
 2. **Rosenbrock Banana Valley**: Classical non-convex parabolic ravine where gradient descent oscillates endlessly.
 3. **Rastrigin Surface**: Highly non-convex multimodal field with dense lattices of local minima.
-4. **Regularized Saddle**: Indefinite saddle point at $(0, 0)$ with symmetric global minima at $(0, \pm\sqrt{5})$ ($f^* = -2.5000$).
+4. **Regularized Saddle**: Indefinite saddle point at $(0, 0)$ with symmetric global minima at $(0, \pm\sqrt{5})$ ($f^\star = -2.5000$).
 5. **Multi-Modal Landscape**: Multiple conflicting basins separated by steep ridges and passes.
 
 <div align="center">
@@ -296,10 +296,27 @@ To rigorously compare optimization mechanics, all 8 optimizers are benchmarked a
 
 ### Per-Surface Raw Performance Breakdown
 
-Before aggregating across all domains, the raw telemetry for each individual landscape reveals distinct failure and success modes across condition numbers, saddle barriers, and non-convex ravines:
+Before aggregating across all domains, the raw telemetry for each individual landscape reveals distinct failure and success modes across condition numbers, saddle barriers, and non-convex ravines.
+
+#### 📖 Benchmark Metrics & Interpretation Guide
+
+To aid in interpreting the telemetry tables below, each metric isolates an orthogonal performance dimension:
+
+- **Optimizer**: The evaluated optimization algorithm and its algorithmic class (1st-order basic, momentum-accelerated, adaptive learning rate, or 2nd-order curvature).
+- **Final Loss $\mathcal{L}(\theta_{250})$**: The scalar loss value attained after exactly 250 update steps from initialization $\theta_0$. Lower values indicate superior convergence; reaching the exact analytical global minimum $f^\star$ represents complete optimization success.
+- **Steps to $\epsilon \le 0.01$**: The iteration count at which the objective function first entered the tolerance sphere $|f(\theta_t) - f^\star| \le 0.01$. Marked as **—** if the optimizer failed to enter this threshold within 250 steps due to plateau stagnation, ravine oscillation, or local basin capture.
+- **Path Efficiency $\in (0, 1]$**: The geodesic ratio of net Euclidean displacement to total traversed arc length:
+  $$
+  \text{Path Efficiency} = \frac{\Vert \theta_{\text{final}} - \theta_0 \Vert_2}{\sum_{t=0}^{T-1} \Vert \theta_{t+1} - \theta_t \Vert_2}
+  $$
+  A score of **1.000** represents a direct geodesic straight line with zero wasted motion. Values $\ll 1$ reveal severe zig-zagging between ravine walls, spiral orbiting, or overshooting.
+- **Step Latency (µs)**: Mean CPU compute time per gradient step in microseconds ($\mu\text{s}$). Reflects the computational cost per update (e.g., first-order methods require ~40–80 µs, whereas second-order Newton steps require ~70–160 µs to invert the Hessian matrix).
+- **Convergence Status**: Qualitative diagnostics characterizing the physical optimization dynamics observed on each landscape.
+
+---
 
 #### 1. Beale Function ($\kappa \gg 10^3$, Flat Wings & Narrow Ravine)
-*Starting Point: $(\theta_1, \theta_2) = (2.0, 2.0)$ &bull; Global Optimum: $f^* = 0.0$*
+**Starting Coordinates:** $(\theta_1, \theta_2) = (2.0, 2.0)$ &bull; **Analytical Global Minimum:** $f^\star = 0.0$
 
 | Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -313,7 +330,7 @@ Before aggregating across all domains, the raw telemetry for each individual lan
 | **Damped Newton** | 14.2031 | — | 0.994 | 161.9 µs | Ill-conditioned Hessian inversion near flat regions |
 
 #### 2. Rosenbrock Banana Valley (Parabolic Ravine)
-*Starting Point: $(\theta_1, \theta_2) = (-0.8, 1.2)$ &bull; Global Optimum: $f^* = 0.0$*
+**Starting Coordinates:** $(\theta_1, \theta_2) = (-0.8, 1.2)$ &bull; **Analytical Global Minimum:** $f^\star = 0.0$
 
 | Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -327,7 +344,7 @@ Before aggregating across all domains, the raw telemetry for each individual lan
 | **Damped Newton** | **0.0000** ★ | **41 steps** ★ | 0.372 | 73.9 µs | **Fastest convergence via 2nd-order curvature** |
 
 #### 3. Rastrigin Surface (Dense Local Minima Lattice)
-*Starting Point: $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; Global Optimum: $f^* = 0.0$*
+**Starting Coordinates:** $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; **Analytical Global Minimum:** $f^\star = 0.0$
 
 | Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -341,7 +358,7 @@ Before aggregating across all domains, the raw telemetry for each individual lan
 | **Damped Newton** | 52.5637 | — | 1.000 | 59.3 µs | Gradient points toward nearest local quadratic |
 
 #### 4. Regularized Saddle (Strict Saddle Escape & Negative Curvature)
-*Starting Point: $(\theta_1, \theta_2) = (0.05, 0.1)$ &bull; Global Optimum: $f^* = -2.5000$*
+**Starting Coordinates:** $(\theta_1, \theta_2) = (0.05, 0.1)$ &bull; **Analytical Global Minimum:** $f^\star = -2.5000$
 
 | Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -355,7 +372,7 @@ Before aggregating across all domains, the raw telemetry for each individual lan
 | **Damped Newton** | 0.0000 | — | 0.898 | 52.5 µs | Trapped at zero-gradient saddle point |
 
 #### 5. Multi-Modal Landscape (Competing Basins & Ridges)
-*Starting Point: $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; Global Optimum: $f^* = -6.55$*
+**Starting Coordinates:** $(\theta_1, \theta_2) = (2.5, 2.5)$ &bull; **Analytical Global Minimum:** $f^\star = -6.5500$
 
 | Optimizer | Final Loss $\mathcal{L}(\theta_{250})$ | Steps to $\epsilon \le 0.01$ | Path Efficiency | Step Latency (µs) | Convergence Status |
 | :--- | :---: | :---: | :---: | :---: | :--- |
@@ -391,10 +408,10 @@ The table below summarizes convergence iterations, final objective values, traje
 The Rosenbrock valley has extreme anisotropic curvature ($\lambda_{\max} / \lambda_{\min} \gg 10^3$). First-order methods bounce between steep walls, wasting gradient magnitude. By computing the inverse Hessian $(\mathbf{H} + \mu \mathbf{I})^{-1}$, Newton's method rotates the update vector directly along the curved valley floor, reaching $\epsilon$-convergence in just **41 steps**. However, solving the linear system incurs higher compute overhead (**95.8 µs/step** vs ~67 µs for first-order).
 
 #### 2. Why are steps to reach $\epsilon$ shown as numbers vs final loss?
-When an optimizer enters within $\epsilon = 0.01$ of the analytical global optimum $f^*$, the table displays the exact iteration count (e.g., `41 steps`). If the optimizer does not reach $\epsilon$ within the 250-step limit due to ill-conditioning or plateau stagnation, the table displays the final loss achieved.
+When an optimizer enters within $\epsilon = 0.01$ of the analytical global optimum $f^\star$, the table displays the exact iteration count (e.g., `41 steps`). If the optimizer does not reach $\epsilon$ within the 250-step limit due to ill-conditioning or plateau stagnation, the table displays the final loss achieved.
 
 #### 3. Why is the final loss negative on Regularized Saddle?
-The test function $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has an indefinite saddle at the origin $(0, 0)$ and symmetric global minima at $(0, \pm\sqrt{5})$ with true analytical minimum $f^* = -2.5000$. Achieving a final loss of $-2.5000$ proves the optimizer built sufficient velocity to escape the saddle point and converge into the global basin.
+The test function $f(x, y) = x^2 - y^2 + 0.1x^4 + 0.1y^4$ has an indefinite saddle at the origin $(0, 0)$ and symmetric global minima at $(0, \pm\sqrt{5})$ with true analytical minimum $f^\star = -2.5000$. Achieving a final loss of $-2.5000$ proves the optimizer built sufficient velocity to escape the saddle point and converge into the global basin.
 
 #### 4. What is Path Efficiency?
 Defined as the ratio of straight-line Euclidean displacement to total traversed arc length:
